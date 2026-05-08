@@ -419,16 +419,20 @@ useHead(computed(() => ({
   ]
 })))
 
-watch(renderedContent, async () => {
+const refreshContent = async () => {
   await nextTick()
+  if (!contentRef.value) return
   buildToc()
   enhanceCodeBlocks()
   observeHeadings()
-}, { immediate: true, flush: 'post' })
+}
+
+watch(() => post.value?.id, refreshContent, { flush: 'post' })
 
 onMounted(() => {
   window.addEventListener('scroll', updateReadingProgress)
   updateReadingProgress()
+  refreshContent()
 })
 
 onUnmounted(() => {

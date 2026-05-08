@@ -1,4 +1,5 @@
 <template>
+  <Teleport to="body">
   <transition
     enter-active-class="transition duration-200 ease-out"
     enter-from-class="opacity-0"
@@ -9,8 +10,8 @@
   >
     <div
       v-if="open"
-      class="fixed inset-0 z-[100] bg-gray-900/50 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4"
-      @click.self="close"
+      class="fixed inset-0 z-[100] bg-gray-900/60 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4"
+      @mousedown.self="close"
     >
       <transition
         enter-active-class="transition duration-200 ease-out"
@@ -150,6 +151,7 @@
       </transition>
     </div>
   </transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -266,8 +268,18 @@ const onGlobalKeydown = (e: KeyboardEvent) => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault()
     emit('update:open', !props.open)
+    return
+  }
+  if (props.open && e.key === 'Escape') {
+    e.preventDefault()
+    close()
   }
 }
+
+watch(() => props.open, (v) => {
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = v ? 'hidden' : ''
+})
 
 onMounted(() => {
   loadHistory()
@@ -276,6 +288,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onGlobalKeydown)
+  if (typeof document !== 'undefined') document.body.style.overflow = ''
 })
 </script>
 
