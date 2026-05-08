@@ -1,0 +1,120 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-sans bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100;
+  }
+
+  ::view-transition-new(body),
+  ::view-transition-old(body) {
+    /* 关闭默认动画 */
+    animation: none;
+  }
+  
+  /* Markdown styles */
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    @apply text-gray-900 dark:text-gray-100 font-bold;
+  }
+  
+  .prose h1 {
+    @apply text-4xl mb-6 mt-8;
+  }
+  
+  .prose h2 {
+    @apply text-3xl mb-4 mt-6 border-b border-gray-200 dark:border-gray-700 pb-2;
+  }
+  
+  .prose h3 {
+    @apply text-2xl mb-4 mt-4;
+  }
+  
+  .prose p {
+    @apply mb-4 leading-relaxed text-gray-700 dark:text-gray-300;
+  }
+  
+  .prose ul, .prose ol {
+    @apply mb-4 pl-6;
+  }
+  
+  .prose li {
+    @apply mb-2;
+  }
+  
+  .prose code {
+    @apply bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono;
+  }
+  
+  .prose pre {
+    @apply bg-gray-900 dark:bg-gray-950 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4;
+  }
+  
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+  
+  .prose blockquote {
+    @apply border-l-4 border-primary-500 pl-4 italic text-gray-600 dark:text-gray-400 mb-4;
+  }
+  
+  .prose a {
+    @apply text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 underline;
+  }
+  
+  .prose img {
+    @apply rounded-lg shadow-md max-w-full h-auto;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 hover:shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+  }
+}
+
+/* Theme transition animation styles */
+::view-transition-old(root),
+::view-transition-new(root) {
+  /* Turn off default animation */
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Ensure the new view is on top during the transition */
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+/* Disable transitions during the view transition */
+.disable-transitions,
+.disable-transitions * {
+  transition: none !important;
+}
+
+/* For browsers that don't support view transitions */
+@supports not (view-transition-name: none) {
+  * {
+    transition-duration: 0s !important;
+  }
+}
