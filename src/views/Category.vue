@@ -62,6 +62,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useHead } from '@vueuse/head'
 import { useBlogStore } from '../stores/blog'
 import PostCard from '../components/PostCard.vue'
 
@@ -78,4 +79,9 @@ const categoryPosts = computed(() => {
   return blogStore.getPostsByCategory(categoryId.value)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 })
+
+useHead(computed(() => ({
+  title: category.value ? `${category.value.name} - EvenKnow` : '分类 - EvenKnow',
+  meta: [{ name: 'description', content: category.value?.description || '' }],
+})))
 </script>

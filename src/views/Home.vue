@@ -130,11 +130,21 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useHead } from '@vueuse/head'
 import { useBlogStore } from '../stores/blog'
 import PostCard from '../components/PostCard.vue'
 import FeaturedPosts from '../components/FeaturedPosts.vue'
 import Categories from '../components/Categories.vue'
 import Pagination from '../components/Pagination.vue'
+
+useHead({
+  title: 'EvenKnow - 前端工程师的技术博客',
+  meta: [
+    { name: 'description', content: '专注 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流，记录前端工程化的真实经验。' },
+    { property: 'og:title', content: 'EvenKnow - 前端工程师的技术博客' },
+    { property: 'og:description', content: '专注 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流。' },
+  ],
+})
 
 const blogStore = useBlogStore()
 const latestSection = ref<HTMLElement>()

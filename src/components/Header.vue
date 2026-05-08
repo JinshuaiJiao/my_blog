@@ -12,6 +12,9 @@
         <router-link to="/" class="nav-link" :class="{ 'nav-link-active': $route.name === 'Home' }">
           首页
         </router-link>
+        <router-link to="/archive" class="nav-link" :class="{ 'nav-link-active': $route.name === 'Archive' }">
+          归档
+        </router-link>
         <router-link to="/about" class="nav-link" :class="{ 'nav-link-active': $route.name === 'About' }">
           关于我
         </router-link>
@@ -56,6 +59,9 @@
       <div class="px-4 py-4 space-y-4">
         <router-link to="/" class="block nav-link" @click="closeMobileMenu">
           首页
+        </router-link>
+        <router-link to="/archive" class="block nav-link" @click="closeMobileMenu">
+          归档
         </router-link>
         <router-link to="/about" class="block nav-link" @click="closeMobileMenu">
           关于我

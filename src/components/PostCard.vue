@@ -7,6 +7,7 @@
       <img
         :src="post.image || 'https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg'"
         :alt="post.title"
+        loading="lazy"
         class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
       >
       <div class="absolute top-4 left-4">

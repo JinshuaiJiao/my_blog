@@ -64,7 +64,16 @@
           <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">技能专长</h2>
           <div class="space-y-6">
             <div v-for="skill in skills" :key="skill.category" class="space-y-3">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ skill.category }}</h3>
+              <div class="flex items-baseline justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ skill.category }}</h3>
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ skill.level }}%</span>
+              </div>
+              <div class="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-primary-500 to-accent-500 rounded-full transition-all duration-1000"
+                  :style="{ width: `${skill.level}%` }"
+                ></div>
+              </div>
               <div class="flex flex-wrap gap-2">
                 <span v-for="tech in skill.technologies" :key="tech"
                   class="px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-full text-sm font-medium">
@@ -207,21 +216,32 @@
 </template>
 
 <script setup lang="ts">
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: '关于 EvenKnow - 前端工程师',
+  meta: [{ name: 'description', content: '5 年 Web 前端开发，主战场 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流。' }],
+})
+
 const skills = [
   {
     category: '前端框架',
+    level: 92,
     technologies: ['Vue3', 'React', 'TypeScript', 'Pinia', 'Vue Router', 'qiankun']
   },
   {
     category: '工程化与构建',
+    level: 88,
     technologies: ['Vite', 'Rsbuild', 'pnpm Monorepo', 'GitLab CI', 'Tailwind CSS', 'SCSS']
   },
   {
     category: '组件库与可视化',
+    level: 85,
     technologies: ['Arco Design', 'Element Plus', 'Vant', 'antd-mobile', 'Iconify', 'ECharts', 'Fabric.js']
   },
   {
     category: '测试 / 跨端 / AI',
+    level: 82,
     technologies: ['MSW', 'Vitest', 'Taro', 'Uniapp', 'Claude Code', 'Codex', 'MCP']
   }
 ]

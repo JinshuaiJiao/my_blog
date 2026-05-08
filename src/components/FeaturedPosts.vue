@@ -15,9 +15,10 @@
         :style="{ 'animation-delay': `${index * 100}ms` }"
       >
         <div class="relative overflow-hidden rounded-t-xl">
-          <img 
+          <img
             :src="post.image || `https://images.pexels.com/photos/${546819 + index}/pexels-photo-${546819 + index}.jpeg`"
             :alt="post.title"
+            loading="lazy"
             class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
           >
           <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>EvenKnow 的技术博客</title>
+    <link>https://my-blog.example.com</link>
+    <description>专注 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流。</description>
+    <language>zh-CN</language>
+    <atom:link href="https://my-blog.example.com/rss.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Fri, 08 May 2026 06:26:14 GMT</lastBuildDate>
+    <item>
+      <title>Claude Code 上手指南：从 hooks 到 MCP 的完整工作流</title>
+      <link>https://my-blog.example.com/post/9</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/9</guid>
+      <pubDate>Fri, 08 May 2026 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>ai-engineering</category>
+      <description><![CDATA[Claude Code 是把 Claude 搬进终端的官方 CLI。本文从安装开始，依次讲 CLAUDE.md、hooks、slash commands 和 MCP，让你建立一套可拦截、可扩展的 AI 开发工作流。]]></description>
+    </item>
+    <item>
+      <title>Claude Code Subagent 实战：把 PR Review 拆成 5 个 Agent 并行跑</title>
+      <link>https://my-blog.example.com/post/10</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/10</guid>
+      <pubDate>Wed, 22 Apr 2026 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>ai-engineering</category>
+      <description><![CDATA[主 agent 上下文有限，长流程容易掉链子。本文介绍如何用 Claude Code subagent 把 PR Review 拆成 5 个独立 agent 并行执行，把 30 分钟的人工评审压缩到 3 分钟。]]></description>
+    </item>
+    <item>
+      <title>Codex CLI vs Claude Code：两个 AI 编码工具的真实对比</title>
+      <link>https://my-blog.example.com/post/11</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/11</guid>
+      <pubDate>Sun, 15 Mar 2026 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>ai-engineering</category>
+      <description><![CDATA[OpenAI Codex CLI 和 Anthropic Claude Code 是当前最成熟的两个 AI 编码 CLI。本文从默认行为、模型、skill 体系、hooks 和定价五个维度做实操对比，给出选型建议。]]></description>
+    </item>
+    <item>
+      <title>给老项目接入 MCP：本地 Git、数据库、Notion 三件套</title>
+      <link>https://my-blog.example.com/post/12</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/12</guid>
+      <pubDate>Fri, 20 Feb 2026 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>ai-engineering</category>
+      <description><![CDATA[给一个跑了 3 年的老项目接入 MCP 的实战记录。从 filesystem-server 起步，逐步接入只读数据库和自建 Notion server，让 AI 从信息接收者变成主动检索者。]]></description>
+    </item>
+    <item>
+      <title>Vue 3 Composition API 完全指南</title>
+      <link>https://my-blog.example.com/post/1</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/1</guid>
+      <pubDate>Mon, 15 Jan 2024 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>vue</category>
+      <description><![CDATA[深入了解 Vue 3 Composition API 的使用方法、优势和最佳实践，助你写出更优雅的 Vue 代码。]]></description>
+    </item>
+    <item>
+      <title>TypeScript 进阶技巧：泛型与类型体操</title>
+      <link>https://my-blog.example.com/post/2</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/2</guid>
+      <pubDate>Wed, 10 Jan 2024 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>typescript</category>
+      <description><![CDATA[探索 TypeScript 的高级类型系统，学习泛型、条件类型、映射类型等进阶技巧。]]></description>
+    </item>
+    <item>
+      <title>现代 CSS 布局：Grid 与 Flexbox 的艺术</title>
+      <link>https://my-blog.example.com/post/3</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/3</guid>
+      <pubDate>Fri, 05 Jan 2024 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>css</category>
+      <description><![CDATA[深入学习 CSS Grid 和 Flexbox，掌握现代 Web 布局的核心技术和最佳实践。]]></description>
+    </item>
+    <item>
+      <title>Node.js 性能优化实战指南</title>
+      <link>https://my-blog.example.com/post/4</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/4</guid>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>engineering</category>
+      <description><![CDATA[全面介绍 Node.js 应用的性能优化策略，从内存管理到集群部署的实战经验分享。]]></description>
+    </item>
+    <item>
+      <title>前端工程化：从零搭建现代化开发环境</title>
+      <link>https://my-blog.example.com/post/5</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/5</guid>
+      <pubDate>Thu, 28 Dec 2023 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>engineering</category>
+      <description><![CDATA[详细介绍前端工程化的完整流程，包括开发环境搭建、代码质量保证、构建优化和 CI/CD 流程。]]></description>
+    </item>
+    <item>
+      <title>JavaScript 异步编程的演进：从回调到 async/await</title>
+      <link>https://my-blog.example.com/post/6</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/6</guid>
+      <pubDate>Mon, 25 Dec 2023 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>javascript</category>
+      <description><![CDATA[深入理解 JavaScript 异步编程的发展历程，掌握从回调函数到 async/await 的各种异步处理方式。]]></description>
+    </item>
+    <item>
+      <title>React Hooks 深度解析与实践</title>
+      <link>https://my-blog.example.com/post/7</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/7</guid>
+      <pubDate>Wed, 20 Dec 2023 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>react</category>
+      <description><![CDATA[深入探讨 React Hooks 的原理和实践，包括内置 Hooks、自定义 Hooks 和性能优化技巧。]]></description>
+    </item>
+    <item>
+      <title>Web 安全基础：防御常见攻击</title>
+      <link>https://my-blog.example.com/post/8</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/8</guid>
+      <pubDate>Fri, 15 Dec 2023 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>engineering</category>
+      <description><![CDATA[全面介绍 Web 应用安全基础知识，包括 XSS、CSRF、SQL 注入等常见攻击的防御策略。]]></description>
+    </item>
+  </channel>
+</rss>

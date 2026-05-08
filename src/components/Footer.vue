@@ -37,10 +37,13 @@
               <router-link to="/" class="footer-link">首页</router-link>
             </li>
             <li>
+              <router-link to="/archive" class="footer-link">归档</router-link>
+            </li>
+            <li>
               <router-link to="/about" class="footer-link">关于我</router-link>
             </li>
             <li>
-              <a href="#" class="footer-link">RSS订阅</a>
+              <a href="/rss.xml" class="footer-link" target="_blank" rel="noopener">RSS 订阅</a>
             </li>
           </ul>
         </div>
