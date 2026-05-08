@@ -6,10 +6,11 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <article 
-        v-for="(post, index) in featuredPosts" 
+      <router-link
+        v-for="(post, index) in featuredPosts"
         :key="post.id"
-        class="card group hover:scale-105 transition-all duration-300"
+        :to="`/post/${post.id}`"
+        class="card group hover:scale-105 transition-all duration-300 block cursor-pointer"
         :class="`animate-slide-up`"
         :style="{ 'animation-delay': `${index * 100}ms` }"
       >
@@ -44,14 +45,11 @@
             {{ post.excerpt }}
           </p>
           
-          <router-link 
-            :to="`/post/${post.id}`"
-            class="btn-primary w-full text-center"
-          >
+          <span class="btn-primary w-full text-center inline-block">
             阅读文章
-          </router-link>
+          </span>
         </div>
-      </article>
+      </router-link>
     </div>
   </section>
 </template>
