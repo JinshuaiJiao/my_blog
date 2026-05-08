@@ -85,6 +85,33 @@
         </div>
       </section>
 
+      <!-- AI Showcase -->
+      <section class="mb-16">
+        <div class="text-center mb-8">
+          <span class="inline-block px-3 py-1 text-xs font-semibold text-white rounded-full mb-3" style="background-color: #A855F7;">
+            AI 工作流实践
+          </span>
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">用 Claude Code 做的大屏可视化</h2>
+          <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            从一句"做个党建数字看板"到这张完整可交互的大屏，全程由 Claude Code 协同完成 —— AI 不是写一行代码，而是参与从需求拆解、组件设计到联调的每一步。
+          </p>
+        </div>
+        <div class="card p-2 md:p-3 max-w-5xl mx-auto overflow-hidden animate-scale-in">
+          <img
+            :src="demoImage"
+            alt="Claude Code 大屏可视化 Demo"
+            loading="lazy"
+            class="w-full rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-500"
+          >
+        </div>
+        <div class="flex flex-wrap justify-center gap-2 mt-6">
+          <span class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full">大屏可视化</span>
+          <span class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full">ECharts</span>
+          <span class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full">Vue3</span>
+          <span class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full">Claude Code</span>
+        </div>
+      </section>
+
       <!-- Projects -->
       <section class="mb-16">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center mb-4">项目经历</h2>
@@ -168,7 +195,7 @@
               </svg>
               <div class="min-w-0">
                 <div class="text-xs text-gray-500 dark:text-gray-400">邮箱</div>
-                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">17363090989@163.com</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 break-all">17363090989@163.com</div>
               </div>
             </div>
             <div class="flex items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
@@ -217,6 +244,7 @@
 
 <script setup lang="ts">
 import { useHead } from '@vueuse/head'
+import demoImage from '../assets/demo.png'
 
 useHead({
   title: '关于 EvenKnow - 前端工程师',

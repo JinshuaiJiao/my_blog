@@ -31,18 +31,59 @@
         </div>
 
         <!-- Theme Toggle -->
-        <button @click="handleThemeToggle"
-          class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          :title="themeStore.isDark ? '切换到浅色模式' : '切换到深色模式'">
-          <svg v-if="themeStore.isDark" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd"
-              d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-              clip-rule="evenodd" />
-          </svg>
-          <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-          </svg>
-        </button>
+        <div class="relative">
+          <button @click="handleThemeToggle"
+            class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            :title="themeStore.isDark ? '切换到浅色模式' : '切换到深色模式'">
+            <svg v-if="themeStore.isDark" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                clip-rule="evenodd" />
+            </svg>
+            <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+            <span v-if="showThemeHint"
+              class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-500"></span>
+            </span>
+          </button>
+
+          <!-- Onboarding Tooltip -->
+          <transition
+            enter-active-class="transition duration-300 ease-out"
+            enter-from-class="opacity-0 -translate-y-2"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition duration-200 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 -translate-y-2"
+          >
+            <div v-if="showThemeHint" class="absolute top-full right-0 mt-3 w-64 z-50">
+              <div class="relative rounded-xl shadow-2xl bg-gradient-to-br from-primary-600 to-accent-500 text-white p-4">
+                <div class="absolute -top-1.5 right-4 w-3 h-3 bg-primary-600 rotate-45"></div>
+                <div class="flex items-start gap-2">
+                  <span class="text-xl leading-none">✨</span>
+                  <div class="flex-1">
+                    <div class="font-semibold text-sm mb-1">试试切换主题</div>
+                    <div class="text-xs text-white/90 leading-relaxed">
+                      点这里在浅色 / 深色模式间无缝切换，带丝滑过渡效果。
+                    </div>
+                  </div>
+                </div>
+                <button
+                  @click.stop="dismissThemeHint"
+                  class="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+                  aria-label="关闭提示"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </transition>
+        </div>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -76,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBlogStore } from '../stores/blog'
 import { useThemeStore } from '../stores/theme'
@@ -87,6 +128,24 @@ const themeStore = useThemeStore()
 
 const showMobileMenu = ref(false)
 const searchQuery = ref('')
+const showThemeHint = ref(false)
+
+const THEME_HINT_KEY = 'theme-hint-dismissed-v1'
+
+const dismissThemeHint = () => {
+  showThemeHint.value = false
+  try {
+    localStorage.setItem(THEME_HINT_KEY, '1')
+  } catch {}
+}
+
+onMounted(() => {
+  try {
+    if (localStorage.getItem(THEME_HINT_KEY)) return
+  } catch {}
+  setTimeout(() => { showThemeHint.value = true }, 1200)
+  setTimeout(dismissThemeHint, 12000)
+})
 
 const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value
@@ -104,6 +163,8 @@ const handleSearch = () => {
 }
 
 const handleThemeToggle = async () => {
+  if (showThemeHint.value) dismissThemeHint()
+
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   if (!document.startViewTransition || prefersReducedMotion) {
