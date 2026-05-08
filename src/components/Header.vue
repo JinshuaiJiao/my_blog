@@ -12,10 +12,6 @@
         <router-link to="/" class="nav-link" :class="{ 'nav-link-active': $route.name === 'Home' }">
           首页
         </router-link>
-        <router-link to="/share" class="nav-link relative" :class="{ 'nav-link-active': String($route.name).startsWith('Share') }">
-          知识分享
-          <span class="absolute -top-1 -right-3 px-1 py-0.5 text-[9px] font-bold rounded bg-accent-500 text-white leading-none">NEW</span>
-        </router-link>
         <router-link to="/archive" class="nav-link" :class="{ 'nav-link-active': $route.name === 'Archive' }">
           归档
         </router-link>
@@ -47,7 +43,7 @@
             <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
             </svg>
-            <span v-if="showThemeHint"
+            <span v-if="showThemeDot"
               class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-500"></span>
@@ -76,7 +72,7 @@
                   </div>
                 </div>
                 <button
-                  @click.stop="dismissThemeHint"
+                  @click.stop="markThemeUsed"
                   class="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
                   aria-label="关闭提示"
                 >
@@ -104,9 +100,6 @@
       <div class="px-4 py-4 space-y-4">
         <router-link to="/" class="block nav-link" @click="closeMobileMenu">
           首页
-        </router-link>
-        <router-link to="/share" class="block nav-link" @click="closeMobileMenu">
-          知识分享 <span class="ml-1 px-1 text-[9px] font-bold rounded bg-accent-500 text-white">NEW</span>
         </router-link>
         <router-link to="/archive" class="block nav-link" @click="closeMobileMenu">
           归档
@@ -136,22 +129,33 @@ const themeStore = useThemeStore()
 const showMobileMenu = ref(false)
 const searchQuery = ref('')
 const showThemeHint = ref(false)
+const showThemeDot = ref(true)
 
-const THEME_HINT_KEY = 'theme-hint-dismissed-v1'
+const THEME_HINT_KEY = 'theme-hint-toggled-v2'
 
-const dismissThemeHint = () => {
+const markThemeUsed = () => {
   showThemeHint.value = false
+  showThemeDot.value = false
   try {
     localStorage.setItem(THEME_HINT_KEY, '1')
   } catch {}
 }
 
+const dismissThemeHint = () => {
+  showThemeHint.value = false
+}
+
 onMounted(() => {
+  let dismissed = false
   try {
-    if (localStorage.getItem(THEME_HINT_KEY)) return
+    dismissed = !!localStorage.getItem(THEME_HINT_KEY)
   } catch {}
-  setTimeout(() => { showThemeHint.value = true }, 1200)
-  setTimeout(dismissThemeHint, 12000)
+  if (dismissed) {
+    showThemeDot.value = false
+    return
+  }
+  setTimeout(() => { showThemeHint.value = true }, 1000)
+  setTimeout(dismissThemeHint, 15000)
 })
 
 const toggleMobileMenu = () => {
@@ -170,7 +174,7 @@ const handleSearch = () => {
 }
 
 const handleThemeToggle = async () => {
-  if (showThemeHint.value) dismissThemeHint()
+  markThemeUsed()
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 

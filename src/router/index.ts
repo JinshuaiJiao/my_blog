@@ -5,8 +5,6 @@ import About from '../views/About.vue'
 import Category from '../views/Category.vue'
 import Tag from '../views/Tag.vue'
 import Archive from '../views/Archive.vue'
-import ShareList from '../views/ShareList.vue'
-import ShareDetail from '../views/ShareDetail.vue'
 import NotFound from '../views/NotFound.vue'
 
 const router = createRouter({
@@ -18,8 +16,6 @@ const router = createRouter({
     { path: '/category/:category', name: 'Category', component: Category },
     { path: '/tag/:name', name: 'Tag', component: Tag },
     { path: '/archive', name: 'Archive', component: Archive },
-    { path: '/share', name: 'ShareList', component: ShareList },
-    { path: '/share/:slug', name: 'ShareDetail', component: ShareDetail },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
   ],
   scrollBehavior(_to, _from, savedPosition) {

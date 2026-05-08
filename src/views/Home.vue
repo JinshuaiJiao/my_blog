@@ -138,10 +138,10 @@ import Categories from '../components/Categories.vue'
 import Pagination from '../components/Pagination.vue'
 
 useHead({
-  title: 'EvenKnow - 前端工程师的技术博客',
+  title: 'EvenKnow个人博客',
   meta: [
     { name: 'description', content: '专注 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流，记录前端工程化的真实经验。' },
-    { property: 'og:title', content: 'EvenKnow - 前端工程师的技术博客' },
+    { property: 'og:title', content: 'EvenKnow个人博客' },
     { property: 'og:description', content: '专注 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流。' },
   ],
 })

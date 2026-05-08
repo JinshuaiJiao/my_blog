@@ -182,6 +182,11 @@
     </section>
   </div>
 
+  <div v-else-if="isLoading" class="container mx-auto px-4 py-24 text-center">
+    <div class="inline-block w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mb-4"></div>
+    <p class="text-gray-600 dark:text-gray-400">正在加载文章…</p>
+  </div>
+
   <div v-else class="container mx-auto px-4 py-16 text-center">
     <div class="max-w-md mx-auto">
       <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,6 +268,8 @@ const post = computed(() => {
   const id = route.params.id as string
   return blogStore.getPostById(id)
 })
+
+const isLoading = computed(() => blogStore.posts.length === 0)
 
 const sortedPosts = computed(() =>
   [...blogStore.posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -410,15 +417,11 @@ watch(renderedContent, async () => {
   buildToc()
   enhanceCodeBlocks()
   observeHeadings()
-}, { immediate: false })
+}, { immediate: true, flush: 'post' })
 
-onMounted(async () => {
+onMounted(() => {
   window.addEventListener('scroll', updateReadingProgress)
   updateReadingProgress()
-  await nextTick()
-  buildToc()
-  enhanceCodeBlocks()
-  observeHeadings()
 })
 
 onUnmounted(() => {
