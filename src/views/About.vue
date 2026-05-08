@@ -14,7 +14,7 @@
 
         <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4 animate-slide-up">
           你好，我是
-          <span class="gradient-text">焦今帅 / EvenKnow</span>
+          <span class="gradient-text">EvenKnow</span>
         </h1>
 
         <p class="text-xl text-gray-600 dark:text-gray-400 mb-8 animate-slide-up" style="animation-delay: 200ms;">
