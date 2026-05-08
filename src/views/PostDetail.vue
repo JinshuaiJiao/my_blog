@@ -210,6 +210,7 @@ import 'highlight.js/styles/github-dark.css'
 import Giscus from '@giscus/vue'
 import { useBlogStore } from '../stores/blog'
 import { useThemeStore } from '../stores/theme'
+import { toast } from '../composables/useToast'
 import PostCard from '../components/PostCard.vue'
 
 import javascript from 'highlight.js/lib/languages/javascript'
@@ -368,9 +369,11 @@ const enhanceCodeBlocks = () => {
       try {
         await navigator.clipboard.writeText(code)
         btn.textContent = '已复制'
+        toast.success('代码已复制', 1500)
         setTimeout(() => { btn.textContent = '复制' }, 1500)
       } catch {
         btn.textContent = '失败'
+        toast.error('复制失败')
       }
     })
     pre.appendChild(btn)
@@ -385,16 +388,11 @@ const getCategoryName = (id: string) => blogStore.categories.find(c => c.id === 
 const getCategoryColor = (id: string) => blogStore.categories.find(c => c.id === id)?.color || '#3b82f6'
 
 const shareArticle = async () => {
-  if (navigator.share && post.value) {
-    try {
-      await navigator.share({ title: post.value.title, text: post.value.excerpt, url: window.location.href })
-    } catch {
-      await navigator.clipboard.writeText(window.location.href)
-      alert('链接已复制到剪贴板！')
-    }
-  } else {
+  try {
     await navigator.clipboard.writeText(window.location.href)
-    alert('链接已复制到剪贴板！')
+    toast.success('文章链接已复制到剪贴板')
+  } catch {
+    toast.error('复制失败，请手动复制地址栏链接')
   }
 }
 

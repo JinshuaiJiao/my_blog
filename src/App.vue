@@ -9,6 +9,7 @@
       </router-view>
     </main>
     <Footer />
+    <ToastContainer />
   </div>
 </template>
 
@@ -16,6 +17,7 @@
 import { onMounted } from 'vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
+import ToastContainer from './components/ToastContainer.vue'
 import { useBlogStore } from './stores/blog'
 
 const blogStore = useBlogStore()
