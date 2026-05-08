@@ -2,57 +2,64 @@
   {
     "id": "vue",
     "name": "Vue.js",
-    "description": "Vue.js 框架相关的技术文章和教程",
+    "description": "Vue3 组合式 API、Pinia、生态实践与源码剖析",
     "color": "#4FC08D",
     "postCount": 1
   },
   {
     "id": "react",
     "name": "React",
-    "description": "React 框架开发技巧和最佳实践",
+    "description": "React 函数式组件、Hooks 与工程化实践",
     "color": "#61DAFB",
     "postCount": 1
   },
   {
     "id": "typescript",
     "name": "TypeScript",
-    "description": "TypeScript 语言特性和高级用法",
+    "description": "类型体操、泛型设计与项目落地经验",
     "color": "#3178C6",
     "postCount": 1
   },
   {
     "id": "javascript",
     "name": "JavaScript",
-    "description": "JavaScript 核心概念和现代特性",
+    "description": "JavaScript 核心机制与现代特性",
     "color": "#F7DF1E",
     "postCount": 1
   },
   {
     "id": "css",
     "name": "CSS",
-    "description": "CSS 样式设计和布局技巧",
+    "description": "样式方案、Tailwind 实践与可视化交互",
     "color": "#1572B6",
-    "postCount": 1
-  },
-  {
-    "id": "nodejs",
-    "name": "Node.js",
-    "description": "Node.js 后端开发和性能优化",
-    "color": "#339933",
     "postCount": 1
   },
   {
     "id": "engineering",
     "name": "前端工程化",
-    "description": "前端工程化工具和开发流程",
+    "description": "Vite / Rsbuild、Monorepo、CI/CD 与性能优化",
     "color": "#FF6B6B",
-    "postCount": 1
+    "postCount": 3
   },
   {
-    "id": "security",
-    "name": "Web 安全",
-    "description": "Web 应用安全防护和最佳实践",
-    "color": "#FF4757",
-    "postCount": 1
+    "id": "mini-program",
+    "name": "小程序",
+    "description": "Taro / Uniapp 跨端开发与多端适配实践",
+    "color": "#07C160",
+    "postCount": 0
+  },
+  {
+    "id": "ai-engineering",
+    "name": "AI 工程化",
+    "description": "Claude Code、Codex 与 AI Agent + MCP 工作流",
+    "color": "#A855F7",
+    "postCount": 0
+  },
+  {
+    "id": "testing",
+    "name": "测试工程",
+    "description": "MSW + Vitest 接口契约、单元测试与可维护性",
+    "color": "#10B981",
+    "postCount": 0
   }
 ]

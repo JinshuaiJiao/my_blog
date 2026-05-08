@@ -97,33 +97,26 @@ const handleSearch = () => {
   }
 }
 
-const handleThemeToggle = (e: MouseEvent) => {
+const handleThemeToggle = async () => {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (!document.startViewTransition || prefersReducedMotion) {
+    themeStore.toggleDark()
+    return
+  }
+
+  const root = document.documentElement
+  root.classList.add('perspective-travel-transition')
+
   const transition = document.startViewTransition(() => {
-    themeStore.toggleDark();
-  });
-
-  transition.ready.then(() => {
-    const { clientX, clientY } = e;
-
-    const endRadius = Math.hypot(
-      Math.max(clientX, window.innerWidth - clientX),
-      Math.max(clientY, window.innerHeight - clientY)
-    );
-
-    document.documentElement.animate(
-      {
-        clipPath: [
-          `circle(0px at ${clientX}px ${clientY}px)`,
-          `circle(${endRadius}px at ${clientX}px ${clientY}px)`
-        ],
-      },
-      {
-        duration: 500,
-        easing: 'ease-out',
-        pseudoElement: '::view-transition-new(root)'
-      }
-    );
+    themeStore.toggleDark()
   })
+
+  try {
+    await transition.finished
+  } finally {
+    root.classList.remove('perspective-travel-transition')
+  }
 }
 </script>
 
