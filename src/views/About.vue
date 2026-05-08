@@ -187,15 +187,15 @@
           <p class="text-xl text-gray-600 dark:text-gray-400 mb-8">
             如果你有任何问题或想要合作，欢迎随时与我联系！
           </p>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto mb-8 text-left">
-            <div class="flex items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8 text-left">
+            <div class="sm:col-span-2 flex items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
               <svg class="w-5 h-5 mr-3 text-primary-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <div class="min-w-0">
                 <div class="text-xs text-gray-500 dark:text-gray-400">邮箱</div>
-                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 break-all">17363090989@163.com</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">17363090989@163.com</div>
               </div>
             </div>
             <div class="flex items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
