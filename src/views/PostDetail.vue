@@ -144,9 +144,22 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { marked } from 'marked'
+import { Marked } from 'marked'
+import { markedHighlight } from 'marked-highlight'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github-dark.css'
 import { useBlogStore } from '../stores/blog'
 import PostCard from '../components/PostCard.vue'
+
+const markdown = new Marked(
+  markedHighlight({
+    langPrefix: 'hljs language-',
+    highlight(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+      return hljs.highlight(code, { language }).value
+    },
+  })
+)
 
 const route = useRoute()
 const blogStore = useBlogStore()
@@ -161,7 +174,7 @@ const post = computed(() => {
 
 const renderedContent = computed(() => {
   if (!post.value) return ''
-  return marked(post.value.content)
+  return markdown.parse(post.value.content)
 })
 
 const relatedPosts = computed(() => {

@@ -1,13 +1,89 @@
 [
   {
+    "id": "9",
+    "title": "Claude Code 上手指南：从 hooks 到 MCP 的完整工作流",
+    "content": "# Claude Code 上手指南：从 hooks 到 MCP 的完整工作流\n\nClaude Code 是 Anthropic 推出的官方 CLI，把 Claude 直接搬到你的终端和编辑器里。和直接在网页对话相比，它最大的差异是：**能看到你的代码、能改你的代码、能跑你的命令**，而且整个过程是可审计、可拦截、可扩展的。\n\n## 为什么选择 Claude Code\n\n- 原生 IDE 集成（VS Code、JetBrains），编辑器里直接看 diff\n- 工具调用全部可见，每个 Bash/Edit/Write 都能被 hook 拦截\n- 支持 MCP（Model Context Protocol），把外部系统挂载成\"工具\"\n- 一份配置走遍 CLI / 桌面 / Web\n\n## 快速上手\n\n```bash\n# 安装\nnpm install -g @anthropic-ai/claude-code\n\n# 在项目里启动\ncd my-project\nclaude\n```\n\n第一次运行会要求登录 Anthropic 账号，之后所有会话都在当前目录上下文里执行。\n\n## CLAUDE.md：项目级记忆\n\n在项目根目录放一个 `CLAUDE.md`，里面写项目约定、技术栈、注意事项，Claude 每次启动都会自动读取。\n\n```markdown\n# 项目说明\n\n- 包管理用 pnpm，不要用 npm/yarn\n- 提交信息用中文，前缀使用 Feat/Fix/Update\n- 测试框架是 Vitest，不要引入 Jest\n- API mock 走 MSW，禁止直接 mock fetch\n```\n\n这是替代\"每次提醒一遍\"最有效的方式。\n\n## Hooks：拦截工具调用\n\nHooks 让你在 Claude 调用工具**前后**插入自己的逻辑。最常用的几种：\n\n```json\n{\n  \"hooks\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"Bash\",\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \".claude/hooks/check-bash.sh\" }\n        ]\n      }\n    ],\n    \"UserPromptSubmit\": [\n      {\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \"rtk-rewrite\" }\n        ]\n      }\n    ]\n  }\n}\n```\n\n我自己用 hooks 做的几件事：\n- 把 `git`/`gh`/`pnpm` 等高频命令通过代理重写，节省 token\n- `git commit` 前自动跑 lint，避免污染历史\n- 提交信息里强制带上 Co-Authored-By\n\n## Slash Commands：自定义流程\n\n把你常用的多步流程写成 `/命令`：\n\n```markdown\n---\ndescription: 把当前分支推到 GitHub 并打开 PR\n---\n\n1. 跑 `pnpm build` 验证\n2. `git push origin HEAD`\n3. `gh pr create --fill`\n```\n\n放到 `.claude/commands/ship.md`，下次输入 `/ship` 就能一键触发。\n\n## MCP：把外部世界接进来\n\nMCP 是一个标准协议，让 Claude 能调用第三方 server 提供的工具。常见 server：\n\n- `@modelcontextprotocol/server-filesystem` 安全访问指定目录\n- `@modelcontextprotocol/server-github` 直接操作 issue/PR\n- 自建 server 暴露内部 API\n\n```json\n{\n  \"mcpServers\": {\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": { \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\" }\n    }\n  }\n}\n```\n\n配置完成后，Claude 就能直接 \"帮我看下 PR #123 的 CI 失败原因\"。\n\n## 总结\n\nClaude Code 的强大不在于模型本身，而在于它把模型变成了**可编排、可拦截、可扩展**的开发伙伴。先把 `CLAUDE.md` 写好，再按需加 hooks 和 MCP，几乎所有重复的开发流程都能交给它。\n",
+    "excerpt": "Claude Code 是把 Claude 搬进终端的官方 CLI。本文从安装开始，依次讲 CLAUDE.md、hooks、slash commands 和 MCP，让你建立一套可拦截、可扩展的 AI 开发工作流。",
+    "author": "EvenKnow",
+    "date": "2026-05-08",
+    "category": "ai-engineering",
+    "tags": [
+      "Claude Code",
+      "AI",
+      "CLI",
+      "MCP"
+    ],
+    "featured": true,
+    "readTime": 12,
+    "image": "https://images.pexels.com/photos/8386434/pexels-photo-8386434.jpeg"
+  },
+  {
+    "id": "10",
+    "title": "Claude Code Subagent 实战：把 PR Review 拆成 5 个 Agent 并行跑",
+    "content": "# Claude Code Subagent 实战：把 PR Review 拆成 5 个 Agent 并行跑\n\n主 agent 上下文有限，长流程跑到后半程容易\"忘事\"。Claude Code 的 subagent 允许你把任务拆给独立的子 agent，每个 subagent 拥有自己的上下文窗口，跑完只把结论返回给主线。这套机制最适合**多角度并行评审**这类任务。\n\n## Subagent 是什么\n\n每个 subagent 是一个 markdown 文件，定义了：\n- `name`：怎么被调用\n- `description`：什么时候触发\n- `tools`：能用哪些工具（白名单）\n- 系统提示词：subagent 的人格和职责\n\n放在 `.claude/agents/` 下，主 agent 可以通过 Agent 工具按 `subagent_type` 派发任务。\n\n## 实战：拆分 PR Review\n\n我把代码评审拆成 5 个独立维度，每个由一个 subagent 负责：\n\n### 1. 安全审查 agent\n\n```markdown\n---\nname: security-reviewer\ndescription: 检查 PR 中的注入、敏感信息泄露、权限绕过\ntools: Read, Grep, Bash\n---\n\n你是安全专家。重点检查：\n- SQL/Shell/Path 注入\n- 硬编码 secret\n- 鉴权 / 越权\n- XSS / SSRF\n只报告有具体证据的问题，不要泛泛而谈。\n```\n\n### 2. 测试覆盖 agent\n\n```markdown\n---\nname: test-coverage-reviewer\ndescription: 评估改动是否有相应单测，定位未覆盖路径\ntools: Read, Grep, Bash\n---\n\n读取 git diff，对每个新增/修改的函数核对：\n1. 是否有对应单测\n2. 测试是否覆盖边界条件\n3. 是否使用了真实 fixture（不要纯 mock）\n```\n\n### 3. 性能 agent\n关注 N+1、不必要的渲染、同步阻塞、内存泄漏。\n\n### 4. 风格一致性 agent\n对照 `CLAUDE.md` 与已有代码风格，挑出\"看起来不像本项目\"的写法。\n\n### 5. 文档 agent\n检查 README / API 文档 / changelog 是否同步更新。\n\n## 主 agent 编排\n\n主 agent 接到 `/review` 命令后，**并行**派发 5 个 subagent：\n\n```python\n# 伪代码：实际是 Agent 工具的多次并行调用\nresults = await Promise.all([\n  Agent(subagent_type='security-reviewer', prompt=diff),\n  Agent(subagent_type='test-coverage-reviewer', prompt=diff),\n  Agent(subagent_type='perf-reviewer', prompt=diff),\n  Agent(subagent_type='style-reviewer', prompt=diff),\n  Agent(subagent_type='docs-reviewer', prompt=diff)\n])\n```\n\n每个 subagent 拿到的是同一份 diff，但只关注自己负责的维度，互不干扰。\n\n## 关键经验\n\n**1. 工具要收紧**\n不要给 subagent 全套工具。比如安全审查 agent 只给 Read/Grep/Bash，不给 Edit/Write，防止它\"修着修着把代码改坏\"。\n\n**2. 输出格式要规范**\n让每个 subagent 返回结构化结论：\n```\n## 严重问题（必须修）\n- [ ] xxx\n## 建议\n- [ ] xxx\n## 已验证 OK\n- xxx\n```\n主 agent 才能聚合成统一报告。\n\n**3. 上下文不共享是优势不是劣势**\n独立上下文意味着每个 subagent \"心无旁骛\"。如果你发现某个维度需要前一个 agent 的结论，那就是拆错了——应该是串行而不是并行。\n\n**4. 用 description 触发，不用名字**\ndescription 写得越具体，主 agent 越知道什么时候该派发。`description: 检查 PR 中的注入、敏感信息泄露、权限绕过` 比 `description: 安全检查` 命中率高得多。\n\n## 真实效果\n\n接入这套流程之前，我自己 review 一个中等 PR 大概 30 分钟。接入之后：\n- 5 个 subagent 并行跑完只要 2-3 分钟\n- 给我一份结构化报告，我只需要 confirm 或 reject\n- 上下文清晰，每条意见都能回溯到具体行号\n\n代码评审从\"被动审视\"变成了\"主动验收\"。\n\n## 总结\n\nSubagent 不是简单的\"多开几个 Claude\"，而是**把上下文窗口变成了可分配资源**。任何流程只要能拆成\"独立维度 → 各自结论 → 聚合报告\"，都适合用 subagent 重写。\n",
+    "excerpt": "主 agent 上下文有限，长流程容易掉链子。本文介绍如何用 Claude Code subagent 把 PR Review 拆成 5 个独立 agent 并行执行，把 30 分钟的人工评审压缩到 3 分钟。",
+    "author": "EvenKnow",
+    "date": "2026-04-22",
+    "category": "ai-engineering",
+    "tags": [
+      "Claude Code",
+      "Subagent",
+      "AI",
+      "代码评审"
+    ],
+    "featured": true,
+    "readTime": 14,
+    "image": "https://images.pexels.com/photos/4974915/pexels-photo-4974915.jpeg"
+  },
+  {
+    "id": "11",
+    "title": "Codex CLI vs Claude Code：两个 AI 编码工具的真实对比",
+    "content": "# Codex CLI vs Claude Code：两个 AI 编码工具的真实对比\n\nOpenAI 的 Codex CLI 和 Anthropic 的 Claude Code 是目前最成熟的两个\"AI 编码 CLI\"。我两个都用过相当长时间，下面给一份**只谈实操、不谈宣传**的对比。\n\n## 共同点\n\n- 都是 CLI 工具，跑在你的终端里\n- 都能读你的代码、跑你的命令、改你的文件\n- 都支持 IDE 集成（VS Code 插件）\n- 都有 MCP / 自定义工具的扩展能力\n- 都支持 hooks / 工具拦截（Codex 较新增加）\n\n## 差异 1：默认行为风格\n\n| 维度 | Claude Code | Codex CLI |\n| --- | --- | --- |\n| 默认主动性 | 偏稳重，多步任务会先给方案 | 偏激进，倾向直接动手 |\n| 误删保护 | force push / rm -rf 默认要二次确认 | 默认权限模式较激进 |\n| 上下文压缩 | 自动压缩，对话可无限延续 | 也支持，策略不同 |\n\n实际用感：写需求模糊时 Claude 会反问，Codex 会\"猜你想要什么然后开干\"。两边各有适用场景。\n\n## 差异 2：模型与上下文\n\n- Claude Code 使用 Claude 4.x 系列（Opus 4.7 默认带 1M 上下文窗口）\n- Codex CLI 使用 GPT-5 系列\n\n1M 上下文对**整库重构、跨文件追踪**这类任务差距巨大。但只是\"改一个组件\"这种局部任务，差距不明显。\n\n## 差异 3：Skill / Subagent 体系\n\nClaude Code 的 **skills** 是一套完整的\"按需载入指令包\"机制：\n- 每个 skill 是一份 markdown，定义触发条件和行为规则\n- 主 agent 在合适的时机自动加载\n- 可以嵌套、可以组合\n\nCodex CLI 的扩展更偏向 **prompt template + tool** 的组合，灵活但需要自己维护规则触发的逻辑。\n\n如果你的工作流复杂、需要\"在不同场景启用不同策略\"，Claude Code 的体系更省心。\n\n## 差异 4：Hooks 生态\n\nClaude Code 的 hooks 配置非常细：\n- `PreToolUse` / `PostToolUse` / `UserPromptSubmit` / `SessionStart` / `Stop` 等\n- 每个 hook 可以根据 matcher 精确匹配工具名\n\nCodex 这一块在快速追赶但目前没那么细。\n\n我用 Claude Code 的 hooks 做了：\n- 高频命令通过 RTK 代理重写（节省 60-90% token）\n- 自动从对话里提取\"用户偏好\"写入持久化记忆\n- 每次 git commit 强制跑 lint\n\n## 差异 5：定价与额度\n\n- Claude Code 以订阅制为主（Pro / Max），固定额度\n- Codex 是 ChatGPT Plus / Pro 套餐附带，按消息数限制\n\n如果是高频重度使用，Max 套餐对 Claude 来说更划算；如果是偶尔用一下，Codex 已经包在 ChatGPT 订阅里了。\n\n## 我的结论\n\n**用 Claude Code 当主力**：\n- 整库重构 / 长流程任务\n- 需要严格控制 AI 行为（hooks 多）\n- 团队共享配置（CLAUDE.md + skills + agents 是一份\"团队约定\"）\n\n**用 Codex CLI 补位**：\n- 单文件快速改动\n- 需要 GPT-5 的某些特定能力（比如 OpenAI 生态深度集成）\n- 已经有 ChatGPT Pro 订阅，不想再付一份钱\n\n**两个一起用**：让它们互相 review 也是个有意思的玩法。我经常 Claude 写完，让 Codex 评审；Codex 拼好原型，让 Claude 整理结构。\n\n## 最后一点感受\n\n工具的差距正在快速缩小，**比工具更重要的是你怎么用它**。一个把 hooks/skills/MCP 玩明白的人，用 Codex 也能搭出强大的工作流；反之亦然。先选一个用熟，再考虑要不要切换。\n",
+    "excerpt": "OpenAI Codex CLI 和 Anthropic Claude Code 是当前最成熟的两个 AI 编码 CLI。本文从默认行为、模型、skill 体系、hooks 和定价五个维度做实操对比，给出选型建议。",
+    "author": "EvenKnow",
+    "date": "2026-03-15",
+    "category": "ai-engineering",
+    "tags": [
+      "Claude Code",
+      "Codex",
+      "AI",
+      "工具对比"
+    ],
+    "featured": false,
+    "readTime": 11,
+    "image": "https://images.pexels.com/photos/1181271/pexels-photo-1181271.jpeg"
+  },
+  {
+    "id": "12",
+    "title": "给老项目接入 MCP：本地 Git、数据库、Notion 三件套",
+    "content": "# 给老项目接入 MCP：本地 Git、数据库、Notion 三件套\n\nMCP（Model Context Protocol）是 Anthropic 提出的开放协议，让 LLM 能以**统一方式**调用外部工具。一旦接入，AI 就能直接读你的数据库、操作你的 GitHub issue、查 Notion 文档，不再是\"只能在对话框里说\"的玩具。\n\n下面是我给一个跑了 3 年的老项目接入 MCP 的真实步骤。\n\n## 为什么要接 MCP\n\n接入前，AI 帮我做事的瓶颈在于**它看不到全貌**：\n- 让它分析数据时只能粘贴 SQL 结果\n- 让它处理 PR 评论时只能复制粘贴\n- 让它对照需求文档时只能截图\n\n接 MCP 之后，这些信息**自动可读**，AI 直接拉数据自己分析。\n\n## 第一件套：filesystem-server\n\n这是最基础的，给 AI 一个**受控**的本地文件读写权限。\n\n```json\n{\n  \"mcpServers\": {\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@modelcontextprotocol/server-filesystem\",\n        \"/Users/me/project\",\n        \"/Users/me/notes\"\n      ]\n    }\n  }\n}\n```\n\n关键是 `args` 里只列你**愿意暴露**的目录。filesystem-server 会拒绝跳出目录的请求，比 `Bash` 工具的 `cat /etc/...` 安全得多。\n\n## 第二件套：postgres-server（数据库）\n\n老项目最痛的就是\"线上有这条记录但 dev 没有\"。接入数据库 server 后，AI 能直接 SELECT 验证。\n\n```json\n{\n  \"postgres-readonly\": {\n    \"command\": \"npx\",\n    \"args\": [\n      \"-y\",\n      \"@modelcontextprotocol/server-postgres\",\n      \"postgresql://readonly_user:xxx@db.staging.internal/myapp\"\n    ]\n  }\n}\n```\n\n**重点**：\n\n1. **必须用只读账号**。MCP server 不会自己防止破坏性 SQL，权限要在 DB 层面收紧\n2. **指向 staging 不指向 prod**。即使是只读，prod 的查询也可能拖慢业务\n3. **明确告诉 Claude 表结构**。在 `CLAUDE.md` 里贴一份核心表 schema，可以省掉它\"先 DESCRIBE 再查\"的来回\n\n## 第三件套：自建 notion-server\n\nNotion 官方的 MCP server 还在迭代，但我有一些定制需求（只查指定 database、对返回结果做格式化），所以自己写了一个。\n\n```typescript\n// notion-mcp/src/index.ts\nimport { Server } from '@modelcontextprotocol/sdk/server/index.js';\nimport { Client } from '@notionhq/client';\n\nconst notion = new Client({ auth: process.env.NOTION_TOKEN });\nconst server = new Server({ name: 'notion-internal', version: '0.1.0' });\n\nserver.setRequestHandler(ListToolsRequestSchema, async () => ({\n  tools: [\n    {\n      name: 'search_specs',\n      description: '搜索产品需求库，返回需求标题和正文',\n      inputSchema: {\n        type: 'object',\n        properties: { query: { type: 'string' } },\n        required: ['query']\n      }\n    }\n  ]\n}));\n\nserver.setRequestHandler(CallToolRequestSchema, async (req) => {\n  if (req.params.name === 'search_specs') {\n    const res = await notion.databases.query({\n      database_id: process.env.SPECS_DB_ID,\n      filter: { property: 'Title', title: { contains: req.params.arguments.query } }\n    });\n    return { content: [{ type: 'text', text: JSON.stringify(res.results) }] };\n  }\n});\n```\n\n接入后，\"这个改动符合需求 ABC 吗？\" 这种问题可以直接由 AI 拉需求文档比对，不再需要我去 Notion 搜。\n\n## 接入清单\n\n我用这份 checklist 接入新的 MCP server：\n\n- [ ] **权限最小化**：只暴露必要的资源/接口\n- [ ] **环境隔离**：staging 优先，prod 慎用\n- [ ] **schema 提示**：在 CLAUDE.md 里写清楚有哪些工具、参数\n- [ ] **错误友好**：server 报错信息要让 AI 能看懂、能自我修正\n- [ ] **审计日志**：记录每次工具调用，方便回溯\n\n## 真实价值\n\n接完三件套后最明显的变化：\n\n**之前：** \"帮我看下 user_id=12345 的订单为什么没生成发票\"\n我得先去 staging DB 跑 SQL，复制结果，粘贴给 AI，AI 再分析。\n\n**之后：** 同样的问题，AI 直接调 postgres-server 跑查询，对照 notion-server 拉来的\"发票生成规则\"文档，自己定位到逻辑断点。\n\n工作流从\"我做信息搬运 + AI 做分析\"变成了\"AI 自己拉数据自己分析\"，节省的不只是时间，更是注意力。\n\n## 总结\n\nMCP 不是把 AI 变得更聪明，而是让它**有手有脚**。给它配上对的工具、收紧权限边界，再老的项目都能榨出 AI 协作的价值。从 filesystem-server 起步，逐步接入数据库和文档，每个 server 解决一个具体痛点，老项目的\"AI 化\"就是这么积累起来的。\n",
+    "excerpt": "给一个跑了 3 年的老项目接入 MCP 的实战记录。从 filesystem-server 起步，逐步接入只读数据库和自建 Notion server，让 AI 从信息接收者变成主动检索者。",
+    "author": "EvenKnow",
+    "date": "2026-02-20",
+    "category": "ai-engineering",
+    "tags": [
+      "MCP",
+      "AI",
+      "工程化",
+      "Claude Code"
+    ],
+    "featured": false,
+    "readTime": 13,
+    "image": "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg"
+  },
+  {
     "id": "1",
     "title": "Vue 3 Composition API 完全指南",
     "content": "# Vue 3 Composition API 完全指南\n\nVue 3 的 Composition API 是一个革命性的新特性，它为我们提供了更好的代码组织和逻辑复用能力。\n\n## 什么是 Composition API？\n\nComposition API 是 Vue 3 中新增的一套 API，它允许我们以函数的方式组织组件逻辑，而不是传统的选项式 API。\n\n## 基本用法\n\n```javascript\nimport { ref, computed, onMounted } from 'vue'\n\nexport default {\n  setup() {\n    const count = ref(0)\n    const doubleCount = computed(() => count.value * 2)\n    \n    const increment = () => {\n      count.value++\n    }\n    \n    onMounted(() => {\n      console.log('组件已挂载')\n    })\n    \n    return {\n      count,\n      doubleCount,\n      increment\n    }\n  }\n}\n```\n\n## 优势\n\n1. **更好的逻辑复用**：通过组合函数，我们可以轻松地在不同组件间复用逻辑\n2. **更好的类型推导**：TypeScript 支持更加完善\n3. **更灵活的代码组织**：相关逻辑可以组织在一起\n\n## 最佳实践\n\n- 使用 `ref` 和 `reactive` 来创建响应式数据\n- 利用 `computed` 创建计算属性\n- 使用生命周期钩子函数来处理组件生命周期\n- 创建组合函数来复用逻辑\n\n通过合理使用 Composition API，我们可以写出更加优雅和可维护的 Vue 应用。",
     "excerpt": "深入了解 Vue 3 Composition API 的使用方法、优势和最佳实践，助你写出更优雅的 Vue 代码。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2024-01-15",
     "category": "vue",
-    "tags": ["Vue.js", "Composition API", "JavaScript"],
+    "tags": [
+      "Vue.js",
+      "Composition API",
+      "JavaScript"
+    ],
     "featured": true,
     "readTime": 8,
     "image": "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg"
@@ -17,10 +93,14 @@
     "title": "TypeScript 进阶技巧：泛型与类型体操",
     "content": "# TypeScript 进阶技巧：泛型与类型体操\n\nTypeScript 的类型系统非常强大，掌握泛型和高级类型操作可以帮助我们写出更加类型安全的代码。\n\n## 泛型基础\n\n泛型允许我们创建可重用的组件，这些组件可以处理多种类型的数据。\n\n```typescript\nfunction identity<T>(arg: T): T {\n  return arg;\n}\n\nlet output = identity<string>(\"myString\");\n```\n\n## 高级泛型用法\n\n### 条件类型\n\n```typescript\ntype NonNullable<T> = T extends null | undefined ? never : T;\n```\n\n### 映射类型\n\n```typescript\ntype Partial<T> = {\n  [P in keyof T]?: T[P];\n};\n```\n\n### 模板字面量类型\n\n```typescript\ntype EventName<T extends string> = `on${Capitalize<T>}`;\ntype ClickEvent = EventName<'click'>; // 'onClick'\n```\n\n## 实际应用场景\n\n1. **API 响应类型定义**\n2. **状态管理类型安全**\n3. **组件 Props 类型约束**\n\n通过这些高级技巧，我们可以构建更加健壮的 TypeScript 应用。",
     "excerpt": "探索 TypeScript 的高级类型系统，学习泛型、条件类型、映射类型等进阶技巧。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2024-01-10",
     "category": "typescript",
-    "tags": ["TypeScript", "泛型", "类型系统"],
+    "tags": [
+      "TypeScript",
+      "泛型",
+      "类型系统"
+    ],
     "featured": true,
     "readTime": 12,
     "image": "https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg"
@@ -30,10 +110,15 @@
     "title": "现代 CSS 布局：Grid 与 Flexbox 的艺术",
     "content": "# 现代 CSS 布局：Grid 与 Flexbox 的艺术\n\nCSS Grid 和 Flexbox 是现代 Web 布局的两大利器，掌握它们可以让我们轻松实现复杂的布局效果。\n\n## CSS Grid 基础\n\nCSS Grid 是二维布局系统，适合处理复杂的布局需求。\n\n```css\n.container {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  grid-template-rows: auto;\n  gap: 20px;\n}\n```\n\n## Flexbox 核心概念\n\nFlexbox 是一维布局系统，非常适合组件内部的布局。\n\n```css\n.flex-container {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  flex-wrap: wrap;\n}\n```\n\n## 如何选择？\n\n- **使用 Grid**：页面级布局、二维排列\n- **使用 Flexbox**：组件级布局、一维排列\n\n## 实战案例\n\n### 响应式卡片布局\n\n```css\n.card-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));\n  gap: 2rem;\n}\n```\n\n### 居中布局\n\n```css\n.center {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  min-height: 100vh;\n}\n```\n\n结合使用 Grid 和 Flexbox，我们可以构建出既美观又实用的现代 Web 界面。",
     "excerpt": "深入学习 CSS Grid 和 Flexbox，掌握现代 Web 布局的核心技术和最佳实践。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2024-01-05",
     "category": "css",
-    "tags": ["CSS", "Grid", "Flexbox", "布局"],
+    "tags": [
+      "CSS",
+      "Grid",
+      "Flexbox",
+      "布局"
+    ],
     "featured": true,
     "readTime": 10,
     "image": "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg"
@@ -43,10 +128,14 @@
     "title": "Node.js 性能优化实战指南",
     "content": "# Node.js 性能优化实战指南\n\nNode.js 应用的性能优化是一个复杂但重要的话题。本文将分享一些实用的优化技巧和最佳实践。\n\n## 性能监控\n\n首先，我们需要建立性能监控体系：\n\n```javascript\nconst performanceObserver = new PerformanceObserver((list) => {\n  for (const entry of list.getEntries()) {\n    console.log(`${entry.name}: ${entry.duration}ms`);\n  }\n});\n\nperformanceObserver.observe({entryTypes: ['measure']});\n```\n\n## 内存优化\n\n### 避免内存泄漏\n\n```javascript\n// 错误示例\nconst cache = new Map();\napp.get('/user/:id', (req, res) => {\n  cache.set(req.params.id, userData); // 永远不清理\n});\n\n// 正确示例\nconst LRU = require('lru-cache');\nconst cache = new LRU({ max: 1000, maxAge: 1000 * 60 * 10 });\n```\n\n## 异步操作优化\n\n### 使用连接池\n\n```javascript\nconst { Pool } = require('pg');\nconst pool = new Pool({\n  host: 'localhost',\n  database: 'mydb',\n  max: 20,\n  idleTimeoutMillis: 30000,\n  connectionTimeoutMillis: 2000,\n});\n```\n\n## 缓存策略\n\n1. **内存缓存**：Redis、Memcached\n2. **HTTP 缓存**：设置合适的 Cache-Control\n3. **应用层缓存**：缓存计算结果\n\n## 集群化部署\n\n```javascript\nconst cluster = require('cluster');\nconst numCPUs = require('os').cpus().length;\n\nif (cluster.isMaster) {\n  for (let i = 0; i < numCPUs; i++) {\n    cluster.fork();\n  }\n} else {\n  require('./app');\n}\n```\n\n通过这些优化技巧，我们可以显著提升 Node.js 应用的性能表现。",
     "excerpt": "全面介绍 Node.js 应用的性能优化策略，从内存管理到集群部署的实战经验分享。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2024-01-01",
     "category": "engineering",
-    "tags": ["Node.js", "性能优化", "后端开发"],
+    "tags": [
+      "Node.js",
+      "性能优化",
+      "后端开发"
+    ],
     "featured": false,
     "readTime": 15,
     "image": "https://images.pexels.com/photos/574077/pexels-photo-574077.jpeg"
@@ -56,10 +145,15 @@
     "title": "前端工程化：从零搭建现代化开发环境",
     "content": "# 前端工程化：从零搭建现代化开发环境\n\n现代前端开发离不开工程化工具链，本文将指导你搭建一个完整的前端开发环境。\n\n## 项目初始化\n\n使用现代化的脚手架工具：\n\n```bash\n# 使用 Vite 创建项目\nnpm create vue@latest my-project\n\n# 或者使用 Create React App\nnpx create-react-app my-app --template typescript\n```\n\n## 代码质量保证\n\n### ESLint 配置\n\n```json\n{\n  \"extends\": [\n    \"@vue/typescript/recommended\",\n    \"prettier\"\n  ],\n  \"rules\": {\n    \"@typescript-eslint/no-unused-vars\": \"error\",\n    \"vue/multi-word-component-names\": \"off\"\n  }\n}\n```\n\n### Prettier 配置\n\n```json\n{\n  \"semi\": false,\n  \"singleQuote\": true,\n  \"trailingComma\": \"es5\",\n  \"tabWidth\": 2\n}\n```\n\n## Git Hooks\n\n使用 husky 和 lint-staged：\n\n```json\n{\n  \"husky\": {\n    \"hooks\": {\n      \"pre-commit\": \"lint-staged\"\n    }\n  },\n  \"lint-staged\": {\n    \"*.{js,vue,ts}\": [\"eslint --fix\", \"git add\"]\n  }\n}\n```\n\n## 构建优化\n\n### Webpack 配置优化\n\n```javascript\nmodule.exports = {\n  optimization: {\n    splitChunks: {\n      chunks: 'all',\n      cacheGroups: {\n        vendor: {\n          test: /[\\/]node_modules[\\/]/,\n          name: 'vendors',\n          chunks: 'all'\n        }\n      }\n    }\n  }\n};\n```\n\n## CI/CD 流程\n\n```yaml\nname: CI/CD\non: [push, pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v2\n      - name: Setup Node.js\n        uses: actions/setup-node@v2\n        with:\n          node-version: '16'\n      - run: npm ci\n      - run: npm run test\n      - run: npm run build\n```\n\n一个完善的工程化环境能够显著提升开发效率和代码质量。",
     "excerpt": "详细介绍前端工程化的完整流程，包括开发环境搭建、代码质量保证、构建优化和 CI/CD 流程。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2023-12-28",
     "category": "engineering",
-    "tags": ["工程化", "Vite", "Webpack", "CI/CD"],
+    "tags": [
+      "工程化",
+      "Vite",
+      "Webpack",
+      "CI/CD"
+    ],
     "featured": false,
     "readTime": 20,
     "image": "https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg"
@@ -69,10 +163,15 @@
     "title": "JavaScript 异步编程的演进：从回调到 async/await",
     "content": "# JavaScript 异步编程的演进：从回调到 async/await\n\nJavaScript 异步编程经历了从回调函数到 Promise，再到 async/await 的演进过程。\n\n## 回调函数时代\n\n最初的异步编程方式：\n\n```javascript\nfunction getData(callback) {\n  setTimeout(() => {\n    callback(null, 'data');\n  }, 1000);\n}\n\ngetData((err, data) => {\n  if (err) {\n    console.error(err);\n  } else {\n    console.log(data);\n  }\n});\n```\n\n## Promise 的出现\n\nPromise 解决了回调地狱问题：\n\n```javascript\nfunction getData() {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      resolve('data');\n    }, 1000);\n  });\n}\n\ngetData()\n  .then(data => console.log(data))\n  .catch(err => console.error(err));\n```\n\n## async/await 语法糖\n\n让异步代码看起来像同步代码：\n\n```javascript\nasync function fetchData() {\n  try {\n    const data = await getData();\n    console.log(data);\n  } catch (err) {\n    console.error(err);\n  }\n}\n```\n\n## 并发处理\n\n### Promise.all\n\n```javascript\nconst [user, posts, comments] = await Promise.all([\n  fetchUser(id),\n  fetchPosts(id),\n  fetchComments(id)\n]);\n```\n\n### Promise.allSettled\n\n```javascript\nconst results = await Promise.allSettled([\n  unstableApi1(),\n  unstableApi2(),\n  unstableApi3()\n]);\n```\n\n## 错误处理最佳实践\n\n```javascript\nasync function robustFunction() {\n  try {\n    const result = await riskyOperation();\n    return { success: true, data: result };\n  } catch (error) {\n    console.error('Operation failed:', error);\n    return { success: false, error: error.message };\n  }\n}\n```\n\n理解异步编程的演进历程，有助于我们写出更优雅的异步代码。",
     "excerpt": "深入理解 JavaScript 异步编程的发展历程，掌握从回调函数到 async/await 的各种异步处理方式。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2023-12-25",
     "category": "javascript",
-    "tags": ["JavaScript", "异步编程", "Promise", "async/await"],
+    "tags": [
+      "JavaScript",
+      "异步编程",
+      "Promise",
+      "async/await"
+    ],
     "featured": false,
     "readTime": 12,
     "image": "https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg"
@@ -82,10 +181,14 @@
     "title": "React Hooks 深度解析与实践",
     "content": "# React Hooks 深度解析与实践\n\nReact Hooks 彻底改变了我们编写 React 组件的方式，让函数组件拥有了状态和生命周期的能力。\n\n## useState 核心原理\n\n```javascript\nimport React, { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  const [name, setName] = useState('');\n  \n  return (\n    <div>\n      <p>Count: {count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        Increment\n      </button>\n    </div>\n  );\n}\n```\n\n## useEffect 生命周期\n\n```javascript\nimport { useEffect } from 'react';\n\nfunction DataFetcher({ userId }) {\n  const [user, setUser] = useState(null);\n  \n  useEffect(() => {\n    let cancelled = false;\n    \n    async function fetchUser() {\n      const response = await api.getUser(userId);\n      if (!cancelled) {\n        setUser(response.data);\n      }\n    }\n    \n    fetchUser();\n    \n    return () => {\n      cancelled = true;\n    };\n  }, [userId]);\n  \n  return user ? <UserProfile user={user} /> : <Loading />;\n}\n```\n\n## 自定义 Hooks\n\n```javascript\nfunction useLocalStorage(key, initialValue) {\n  const [storedValue, setStoredValue] = useState(() => {\n    try {\n      const item = window.localStorage.getItem(key);\n      return item ? JSON.parse(item) : initialValue;\n    } catch (error) {\n      return initialValue;\n    }\n  });\n  \n  const setValue = (value) => {\n    try {\n      setStoredValue(value);\n      window.localStorage.setItem(key, JSON.stringify(value));\n    } catch (error) {\n      console.error(error);\n    }\n  };\n  \n  return [storedValue, setValue];\n}\n```\n\n## 性能优化\n\n### useMemo 和 useCallback\n\n```javascript\nconst ExpensiveComponent = ({ items, filter }) => {\n  const filteredItems = useMemo(() => {\n    return items.filter(item => item.type === filter);\n  }, [items, filter]);\n  \n  const handleClick = useCallback((id) => {\n    console.log('Clicked:', id);\n  }, []);\n  \n  return (\n    <div>\n      {filteredItems.map(item => (\n        <Item \n          key={item.id} \n          item={item} \n          onClick={handleClick}\n        />\n      ))}\n    </div>\n  );\n};\n```\n\n## Context 与 Hooks 结合\n\n```javascript\nconst ThemeContext = createContext();\n\nexport function useTheme() {\n  const context = useContext(ThemeContext);\n  if (!context) {\n    throw new Error('useTheme must be used within ThemeProvider');\n  }\n  return context;\n}\n```\n\nHooks 让 React 开发变得更加直观和强大，是现代 React 开发的核心。",
     "excerpt": "深入探讨 React Hooks 的原理和实践，包括内置 Hooks、自定义 Hooks 和性能优化技巧。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2023-12-20",
     "category": "react",
-    "tags": ["React", "Hooks", "JavaScript"],
+    "tags": [
+      "React",
+      "Hooks",
+      "JavaScript"
+    ],
     "featured": false,
     "readTime": 14,
     "image": "https://images.pexels.com/photos/262508/pexels-photo-262508.jpeg"
@@ -95,10 +198,15 @@
     "title": "Web 安全基础：防御常见攻击",
     "content": "# Web 安全基础：防御常见攻击\n\nWeb 安全是现代应用开发中不可忽视的重要环节，本文将介绍常见的安全威胁和防御策略。\n\n## XSS 攻击防护\n\n跨站脚本攻击是最常见的 Web 安全问题之一：\n\n### 输入验证和输出编码\n\n```javascript\n// 错误示例\nfunction displayUserComment(comment) {\n  document.innerHTML = comment; // 危险！\n}\n\n// 正确示例\nfunction displayUserComment(comment) {\n  const sanitized = DOMPurify.sanitize(comment);\n  document.innerHTML = sanitized;\n}\n```\n\n### Content Security Policy\n\n```html\n<meta http-equiv=\"Content-Security-Policy\" \n      content=\"default-src 'self'; script-src 'self' 'unsafe-inline'\">\n```\n\n## CSRF 攻击防护\n\n跨站请求伪造攻击的防御：\n\n```javascript\n// 使用 CSRF Token\napp.use(csrf());\n\napp.get('/form', (req, res) => {\n  res.render('form', { csrfToken: req.csrfToken() });\n});\n```\n\n## SQL 注入防护\n\n```javascript\n// 错误示例\nconst query = `SELECT * FROM users WHERE id = ${userId}`;\n\n// 正确示例\nconst query = 'SELECT * FROM users WHERE id = ?';\ndb.execute(query, [userId]);\n```\n\n## HTTPS 和安全头部\n\n```javascript\napp.use(helmet({\n  contentSecurityPolicy: {\n    directives: {\n      defaultSrc: [\"'self'\"],\n      styleSrc: [\"'self'\", \"'unsafe-inline'\"]\n    }\n  },\n  hsts: {\n    maxAge: 31536000,\n    includeSubDomains: true,\n    preload: true\n  }\n}));\n```\n\n## 身份验证和授权\n\n### JWT 最佳实践\n\n```javascript\nconst jwt = require('jsonwebtoken');\n\nfunction generateToken(user) {\n  return jwt.sign(\n    { id: user.id, email: user.email },\n    process.env.JWT_SECRET,\n    { expiresIn: '1h' }\n  );\n}\n\nfunction verifyToken(req, res, next) {\n  const token = req.headers.authorization?.split(' ')[1];\n  \n  if (!token) {\n    return res.status(401).json({ error: 'Access denied' });\n  }\n  \n  try {\n    const decoded = jwt.verify(token, process.env.JWT_SECRET);\n    req.user = decoded;\n    next();\n  } catch (error) {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n}\n```\n\n## 数据验证\n\n```javascript\nconst Joi = require('joi');\n\nconst userSchema = Joi.object({\n  email: Joi.string().email().required(),\n  password: Joi.string().min(8).required(),\n  age: Joi.number().integer().min(0).max(120)\n});\n\nfunction validateUser(req, res, next) {\n  const { error } = userSchema.validate(req.body);\n  if (error) {\n    return res.status(400).json({ error: error.details[0].message });\n  }\n  next();\n}\n```\n\n建立安全意识，从开发阶段就考虑安全问题，是构建可靠应用的基础。",
     "excerpt": "全面介绍 Web 应用安全基础知识，包括 XSS、CSRF、SQL 注入等常见攻击的防御策略。",
-    "author": "张三",
+    "author": "EvenKnow",
     "date": "2023-12-15",
     "category": "engineering",
-    "tags": ["Web安全", "XSS", "CSRF", "安全防护"],
+    "tags": [
+      "Web安全",
+      "XSS",
+      "CSRF",
+      "安全防护"
+    ],
     "featured": false,
     "readTime": 18,
     "image": "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg"
