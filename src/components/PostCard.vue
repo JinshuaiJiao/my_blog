@@ -63,7 +63,7 @@
 import type { Post } from '../types/blog'
 import { useBlogStore } from '../stores/blog'
 
-const props = defineProps<{
+defineProps<{
   post: Post
 }>()
 

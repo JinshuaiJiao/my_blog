@@ -145,7 +145,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
-import { useScroll } from '@vueuse/core'
 import { useBlogStore } from '../stores/blog'
 import PostCard from '../components/PostCard.vue'
 
