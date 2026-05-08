@@ -1,5 +1,275 @@
 [
   {
+    "id": "13",
+    "title": "Pinia 实战：state、getter、action 的工程级用法",
+    "content": "# Pinia 实战：state、getter、action 的工程级用法\n\nPinia 是 Vue 官方推荐的状态管理库，比 Vuex 更轻、更类型友好。这篇只讲项目里真正会遇到的 4 件事。\n\n## 1. Store 拆分：按业务域而非数据结构\n\n```typescript\n// stores/user.ts\nexport const useUserStore = defineStore('user', () => {\n  const profile = ref<UserProfile | null>(null)\n  const isLogin = computed(() => !!profile.value)\n\n  async function fetchProfile() {\n    profile.value = await api.getProfile()\n  }\n\n  return { profile, isLogin, fetchProfile }\n})\n```\n\n按\"用户\"、\"购物车\"、\"订单\"分 store，比按\"全局/页面/组件\"分更清晰。\n\n## 2. Getter 派生数据 + 缓存\n\n```typescript\nconst useCartStore = defineStore('cart', () => {\n  const items = ref<CartItem[]>([])\n  const total = computed(() =>\n    items.value.reduce((sum, i) => sum + i.price * i.qty, 0)\n  )\n  return { items, total }\n})\n```\n\n`computed` 自带依赖追踪，不需要手动 memoize。\n\n## 3. Action 里调 API + 错误处理\n\n```typescript\nasync function checkout() {\n  try {\n    loading.value = true\n    await api.checkout(items.value)\n    items.value = []\n    toast.success('支付成功')\n  } catch (err) {\n    toast.error(err.message)\n  } finally {\n    loading.value = false\n  }\n}\n```\n\n不要在组件里再包一层 try/catch —— 把错误处理收敛到 store。\n\n## 4. 持久化：用 pinia-plugin-persistedstate\n\n```typescript\nconst useAuthStore = defineStore('auth', () => {\n  const token = ref('')\n  return { token }\n}, { persist: true })\n```\n\n一行配置就能写 localStorage，刷新页面状态还在。\n\n## 总结\n\nPinia 真正的价值是 **类型推导 + 组合式 API + 比 Vuex 少一半样板代码**。从一个新模块开始迁，比一次性大重写更稳。\n",
+    "excerpt": "Vuex 已经够用，为什么团队都在迁 Pinia？这篇把 store 拆分、持久化、跨组件复用三件事讲透。",
+    "author": "EvenKnow",
+    "date": "2025-11-12",
+    "category": "vue",
+    "tags": [
+      "Vue.js",
+      "Pinia",
+      "状态管理"
+    ],
+    "featured": false,
+    "readTime": 8,
+    "image": "https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg"
+  },
+  {
+    "id": "14",
+    "title": "Vue3 自定义组合函数（Composables）设计指南",
+    "content": "# Vue3 自定义组合函数（Composables）设计指南\n\nComposition API 的精华不是 setup，而是 **可复用的组合函数**。这篇展示我项目里最常用的 3 个。\n\n## useFetch：带状态的请求\n\n```typescript\nexport function useFetch<T>(url: () => string) {\n  const data = ref<T | null>(null)\n  const error = ref<Error | null>(null)\n  const loading = ref(false)\n\n  const execute = async () => {\n    loading.value = true\n    error.value = null\n    try {\n      const res = await fetch(url())\n      data.value = await res.json()\n    } catch (e) {\n      error.value = e as Error\n    } finally {\n      loading.value = false\n    }\n  }\n\n  watchEffect(execute)\n  return { data, error, loading, refresh: execute }\n}\n```\n\n组件里一行：`const { data, loading } = useFetch(() => `/api/user/${id.value}`)`，url 变化自动重新请求。\n\n## useDebounce：防抖响应式值\n\n```typescript\nexport function useDebounce<T>(value: Ref<T>, delay = 300) {\n  const debounced = ref(value.value) as Ref<T>\n  let timer: ReturnType<typeof setTimeout>\n  watch(value, (v) => {\n    clearTimeout(timer)\n    timer = setTimeout(() => { debounced.value = v }, delay)\n  })\n  return debounced\n}\n```\n\n搜索框：`const debouncedQuery = useDebounce(query, 500)`，绑到 `useFetch` 上即可。\n\n## useLocalStorage：响应式持久化\n\n```typescript\nexport function useLocalStorage<T>(key: string, initial: T) {\n  const stored = localStorage.getItem(key)\n  const value = ref<T>(stored ? JSON.parse(stored) : initial)\n  watch(value, (v) => localStorage.setItem(key, JSON.stringify(v)), { deep: true })\n  return value\n}\n```\n\n替代 Pinia 持久化的轻量方案，适合用户偏好类数据。\n\n## 设计原则\n\n1. **每个 composable 只做一件事**\n2. **返回 ref，让外部用 `.value` 访问**\n3. **副作用要在内部清理**（用 `onScopeDispose`）\n4. **支持响应式参数**（用 `Ref` / 函数 getter，不用裸值）\n\n写 composable 比写 mixin 时代心智负担小一个数量级。\n",
+    "excerpt": "useFetch、useDebounce、useLocalStorage—— 自定义组合函数才是 Composition API 的真正杀手锏。",
+    "author": "EvenKnow",
+    "date": "2025-10-20",
+    "category": "vue",
+    "tags": [
+      "Vue.js",
+      "Composables",
+      "Composition API"
+    ],
+    "featured": false,
+    "readTime": 9,
+    "image": "https://images.pexels.com/photos/270404/pexels-photo-270404.jpeg"
+  },
+  {
+    "id": "15",
+    "title": "TypeScript tsconfig 关键项详解：项目踩过的坑都在这",
+    "content": "# TypeScript tsconfig 关键项详解：项目踩过的坑都在这\n\n`tsconfig.json` 看似简单，错配一个字段能让 IDE 报错堆成山。这篇按\"会踩\"程度排序，把高频选项讲清楚。\n\n## strict：必须开\n\n```json\n{\n  \"compilerOptions\": {\n    \"strict\": true\n  }\n}\n```\n\n`strict` 等价于打开 7 个子选项（`strictNullChecks`、`noImplicitAny`、`strictFunctionTypes` 等）。**新项目无脑开，老项目逐文件迁**。\n\n## moduleResolution：bundler 还是 node？\n\n- Vite / Webpack 项目用 `\"bundler\"`（TS 5.0+）\n- Node 项目用 `\"node16\"` 或 `\"nodenext\"`\n\n错配会出现 \"找不到模块\" 的诡异报错。\n\n## paths：路径别名\n\n```json\n{\n  \"baseUrl\": \".\",\n  \"paths\": {\n    \"@/*\": [\"src/*\"],\n    \"@core/*\": [\"packages/core/*\"]\n  }\n}\n```\n\n注意：**TS 只负责类型检查的别名识别，运行时还需要 Vite/Webpack 的同步配置**。两边对不上是最常见的\"类型对但跑不起来\"。\n\n## composite + project references：Monorepo 必备\n\n```json\n{\n  \"compilerOptions\": {\n    \"composite\": true,\n    \"declaration\": true\n  },\n  \"references\": [\n    { \"path\": \"../core\" }\n  ]\n}\n```\n\n打开后用 `tsc -b` 增量构建，大型 monorepo 编译时间能从 60s → 5s。\n\n## skipLibCheck：忽略第三方库的类型错误\n\n```json\n{ \"skipLibCheck\": true }\n```\n\n被坑过的人都会开。某些库的 `.d.ts` 写得有问题，会让你的项目编译失败。\n\n## 几个常见组合\n\n| 项目类型 | strict | module | moduleResolution |\n| --- | --- | --- | --- |\n| Vite + Vue/React | true | ESNext | bundler |\n| Node 后端 | true | NodeNext | nodenext |\n| 库（要 dts） | true | ESNext | bundler + composite |\n\n## 总结\n\n把 tsconfig 当成\"开发环境契约\"，所有人 IDE 行为一致，CI 才能复现本地。改之前先理解，不要复制粘贴别人的配置。\n",
+    "excerpt": "strict、moduleResolution、paths、composite—— 那些\"配错就编译失败\"的字段全梳理一遍。",
+    "author": "EvenKnow",
+    "date": "2025-11-25",
+    "category": "typescript",
+    "tags": [
+      "TypeScript",
+      "tsconfig",
+      "工程化"
+    ],
+    "featured": false,
+    "readTime": 10,
+    "image": "https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg"
+  },
+  {
+    "id": "16",
+    "title": "用 Discriminated Union 优雅建模业务状态",
+    "content": "# 用 Discriminated Union 优雅建模业务状态\n\n业务里到处是\"加载中 / 成功 / 失败\"三态。多数人写成下面这样：\n\n```typescript\nconst data = ref<User | null>(null)\nconst loading = ref(false)\nconst error = ref<Error | null>(null)\n```\n\n三个 ref 互相之间没约束，能出现 `loading=true` 同时 `data` 也有值的非法状态。\n\n## Discriminated Union 写法\n\n```typescript\ntype FetchState<T> =\n  | { status: 'idle' }\n  | { status: 'loading' }\n  | { status: 'success'; data: T }\n  | { status: 'error'; error: Error }\n```\n\n`status` 字段是 **判别字段**，不同分支携带不同的字段。\n\n## 用法：编译器帮你穷举\n\n```typescript\nfunction render(state: FetchState<User>) {\n  switch (state.status) {\n    case 'idle': return '点击加载'\n    case 'loading': return <Spinner />\n    case 'success': return <UserCard user={state.data} />  // 这里 state.data 是 User，不是 User | null\n    case 'error': return state.error.message\n  }\n}\n```\n\n如果你漏写一个分支（比如忘了 `error`），编译器会报错。这就是\"穷举性检查\"。\n\n## 配合 reducer 用\n\n```typescript\ntype Action =\n  | { type: 'fetch' }\n  | { type: 'success'; data: User }\n  | { type: 'error'; error: Error }\n\nfunction reducer(state: FetchState<User>, action: Action): FetchState<User> {\n  switch (action.type) {\n    case 'fetch': return { status: 'loading' }\n    case 'success': return { status: 'success', data: action.data }\n    case 'error': return { status: 'error', error: action.error }\n  }\n}\n```\n\nXState 等状态机库底层就是这套思路。\n\n## 适用场景\n\n- 任何\"互斥状态\"：上传中 / 上传完 / 上传失败\n- 表单步骤：填资料 / 等审核 / 通过 / 拒绝\n- 权限：未登录 / 普通用户 / 管理员\n\n一旦用上，写 if 判断的次数会少一半。\n",
+    "excerpt": "Loading / Success / Error 三态用 union 类型一锅炖，TypeScript 帮你穷举不漏分支。",
+    "author": "EvenKnow",
+    "date": "2025-09-30",
+    "category": "typescript",
+    "tags": [
+      "TypeScript",
+      "类型设计",
+      "状态机"
+    ],
+    "featured": false,
+    "readTime": 7,
+    "image": "https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg"
+  },
+  {
+    "id": "17",
+    "title": "Tailwind CSS 实战：从'类名地狱'到享受其中",
+    "content": "# Tailwind CSS 实战：从\"类名地狱\"到享受其中\n\n第一次看 Tailwind 都觉得\"满屏 class 不能忍\"。用了 3 个项目后我变成了死忠粉，原因是它解决了团队协作里最头疼的两件事：**命名** 和 **作用域**。\n\n## 1. 用 @apply 抽公共样式\n\n不要把 Tailwind 用成\"行内样式\"，常用组合抽出来：\n\n```css\n@layer components {\n  .btn-primary {\n    @apply px-6 py-3 bg-primary-600 text-white rounded-lg\n           hover:bg-primary-700 transition-colors;\n  }\n  .card {\n    @apply rounded-xl bg-white dark:bg-gray-800 shadow-md\n           border border-gray-100 dark:border-gray-700;\n  }\n}\n```\n\n模板里写 `class=\"btn-primary\"`，比写组件还干净。\n\n## 2. theme 自定义品牌色\n\n```javascript\n// tailwind.config.js\nmodule.exports = {\n  theme: {\n    extend: {\n      colors: {\n        primary: {\n          50: '#eff6ff',\n          // ...\n          600: '#2563eb',\n          900: '#1e3a8a',\n        },\n        accent: { 500: '#f97316' }\n      }\n    }\n  }\n}\n```\n\n整个项目用 `bg-primary-600` 而不是 `bg-blue-600`，换主题改一处即可。\n\n## 3. dark: 配合 CSS 变量\n\n```html\n<div class=\"bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100\">\n```\n\n切换主题在 `<html>` 上加 `class=\"dark\"`，所有 `dark:` 前缀的样式自动生效。比手写 `[data-theme=dark]` 简洁。\n\n## 4. 用 prettier-plugin-tailwindcss 自动排序\n\n```json\n{ \"plugins\": [\"prettier-plugin-tailwindcss\"] }\n```\n\n保存自动排成官方推荐的顺序：布局 → 间距 → 颜色 → 状态。从此 PR diff 干净。\n\n## 5. group / peer 处理交互\n\n```html\n<div class=\"group\">\n  <img class=\"group-hover:scale-110 transition-transform\" />\n  <p class=\"opacity-0 group-hover:opacity-100\">悬停显示</p>\n</div>\n```\n\n整张卡片 hover 触发内部子元素状态，不写一行 JS。\n\n## 真实工作量对比\n\n我做过统计：相同的 UI，Tailwind 版本比 BEM + SCSS 少 40% 代码、PR 评审时间少 60%。**根本原因是不需要给样式起名字了**。\n\n## 总结\n\n不要把 Tailwind 当成\"快速原型工具\"，它是认真的工程化样式方案。配合 component 抽离 + 主题定制 + 排序插件，三个月后你会回不去。\n",
+    "excerpt": "Tailwind 不是反 CSS 模式，而是把 CSS 变成可组合的乐高。这篇讲怎么把它用顺手。",
+    "author": "EvenKnow",
+    "date": "2025-12-08",
+    "category": "css",
+    "tags": [
+      "Tailwind CSS",
+      "CSS",
+      "样式方案"
+    ],
+    "featured": false,
+    "readTime": 9,
+    "image": "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg"
+  },
+  {
+    "id": "18",
+    "title": "View Transitions API：让单页应用切换页面有质感",
+    "content": "# View Transitions API：让单页应用切换页面有质感\n\n`document.startViewTransition` 是浏览器原生支持的页面过渡 API。Chrome 111+ 已经稳定，效果比 vue 的 `<transition>` 好一个数量级。\n\n## 最简单的用法\n\n```javascript\nfunction navigate(to) {\n  if (!document.startViewTransition) {\n    location.href = to\n    return\n  }\n  document.startViewTransition(() => {\n    location.href = to\n  })\n}\n```\n\n浏览器自动给\"前后两帧\"做交叉淡入淡出。\n\n## 在 Vue Router 里接入\n\n```javascript\nrouter.beforeResolve(async (to, from, next) => {\n  if (!document.startViewTransition || from.name === to.name) {\n    next()\n    return\n  }\n  const transition = document.startViewTransition(() => next())\n  await transition.finished\n})\n```\n\n## 自定义动画\n\n通过 `view-transition-name` 给元素命名，再写 CSS：\n\n```css\n.hero {\n  view-transition-name: hero;\n}\n::view-transition-old(hero) {\n  animation: 200ms ease-out both fade-out;\n}\n::view-transition-new(hero) {\n  animation: 300ms ease-in both fade-in;\n}\n```\n\n## 实战：主题切换的丝滑感\n\n```javascript\nfunction toggleTheme() {\n  if (!document.startViewTransition) {\n    document.documentElement.classList.toggle('dark')\n    return\n  }\n  document.startViewTransition(() => {\n    document.documentElement.classList.toggle('dark')\n  })\n}\n```\n\n切换深色模式时，整个屏幕做一次平滑过渡，体验细节直接拉满。\n\n## 兼容性兜底\n\n```javascript\nconst supports = 'startViewTransition' in document\n```\n\n不支持的浏览器（Safari < 18）走老路径，用户感知差异约等于零。\n\n## 总结\n\n很少有 Web 新 API 像 View Transitions 这样性价比这么高 —— 一行代码换一个体验质感。看到 chrome://flags 里的 stable feature 别犹豫，用就完了。\n",
+    "excerpt": "原生浏览器 API 实现页面切换动效，相比 transition + class 组合，体验直接拉高一档。",
+    "author": "EvenKnow",
+    "date": "2025-08-15",
+    "category": "css",
+    "tags": [
+      "CSS",
+      "View Transitions",
+      "动画"
+    ],
+    "featured": false,
+    "readTime": 7,
+    "image": "https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg"
+  },
+  {
+    "id": "19",
+    "title": "现代 JavaScript：可选链、空值合并与 Top-level await 的实战",
+    "content": "# 现代 JavaScript：可选链、空值合并与 Top-level await 的实战\n\nECMAScript 每年都加新语法。这篇只挑\"上线之后真的省事\"的几个特性，按使用频率排序。\n\n## 1. 可选链 `?.`\n\n```javascript\n// 之前\nconst city = user && user.address && user.address.city\n\n// 现在\nconst city = user?.address?.city\n```\n\n数组、函数调用都支持：\n\n```javascript\narr?.[0]\nfn?.(args)\n```\n\n少写 70% 防御代码。\n\n## 2. 空值合并 `??`\n\n```javascript\nconst port = process.env.PORT ?? 3000\n// 注意：?? 只在 null / undefined 时回退，0 和 '' 会保留\n```\n\n跟 `||` 的差异是 `0 || 3000` 会变成 3000，而 `0 ?? 3000` 还是 0。\n\n## 3. 逻辑赋值 `??=` / `||=` / `&&=`\n\n```javascript\nconfig.timeout ??= 5000  // 不存在才赋值\ncache[key] ||= computeExpensive()  // falsy 才计算\n```\n\n## 4. 数组解构带默认值\n\n```javascript\nconst [first = 0, ...rest] = arr\nconst { name = '匿名', age } = user\n```\n\n## 5. Top-level await\n\n```javascript\n// app.js（ES Module 模块顶层）\nconst config = await loadConfig()\nconst app = createApp(config)\n```\n\n不再需要 `(async () => { ... })()` 立即执行函数包装。Vite / 现代打包器都已经支持。\n\n## 6. `Promise.allSettled`\n\n```javascript\nconst results = await Promise.allSettled([\n  fetch('/api/a'),\n  fetch('/api/b'),\n  fetch('/api/c'),\n])\nconst success = results.filter(r => r.status === 'fulfilled')\n```\n\n跟 `Promise.all` 不同，单个失败不会让整体 reject。\n\n## 7. `Object.hasOwn`\n\n```javascript\n// 推荐\nObject.hasOwn(obj, 'key')\n// 旧写法：易踩 prototype 链坑\nobj.hasOwnProperty('key')\n```\n\n## 8. `structuredClone`\n\n```javascript\nconst deepCopy = structuredClone(complexObject)\n```\n\n终于有原生深拷贝了。`Date`、`Map`、`Set`、`ArrayBuffer` 都支持。\n\n## 总结\n\n这些 API 都是 evergreen 浏览器原生支持，不需要 polyfill。在新项目里大胆用，旧项目逐步替换。\n",
+    "excerpt": "ES2020+ 那些实用语法你都用上了吗？这篇把高频特性按\"少写多少代码\"排序梳理。",
+    "author": "EvenKnow",
+    "date": "2025-12-15",
+    "category": "javascript",
+    "tags": [
+      "JavaScript",
+      "ES2020",
+      "现代特性"
+    ],
+    "featured": false,
+    "readTime": 8,
+    "image": "https://images.pexels.com/photos/4974914/pexels-photo-4974914.jpeg"
+  },
+  {
+    "id": "20",
+    "title": "AbortController：现代 Web 取消异步任务的标准答案",
+    "content": "# AbortController：现代 Web 取消异步任务的标准答案\n\n旧时代取消 fetch 要靠\"标志位 + 手动检查\"，丑且容易漏。`AbortController` 是 Web 平台提供的统一取消机制。\n\n## 取消 fetch\n\n```javascript\nconst controller = new AbortController()\nfetch('/api/data', { signal: controller.signal })\n  .then(res => res.json())\n  .catch(err => {\n    if (err.name === 'AbortError') console.log('取消了')\n  })\n\n// 1 秒后取消\nsetTimeout(() => controller.abort(), 1000)\n```\n\n## 处理\"过期请求\"竞态\n\n```javascript\nlet lastController\nasync function search(query) {\n  lastController?.abort()\n  lastController = new AbortController()\n  try {\n    const res = await fetch(`/api/search?q=${query}`, {\n      signal: lastController.signal\n    })\n    return res.json()\n  } catch (e) {\n    if (e.name !== 'AbortError') throw e\n  }\n}\n```\n\n每次新查询取消上一个，避免\"输完前一个字的结果覆盖最新结果\"的经典 bug。\n\n## 取消多种异步\n\n`signal` 也能传给 `addEventListener`、`setTimeout` 等：\n\n```javascript\nconst controller = new AbortController()\nconst { signal } = controller\n\nbutton.addEventListener('click', handler, { signal })\nwindow.addEventListener('resize', onResize, { signal })\n\n// 一次性清理所有\ncontroller.abort()\n```\n\n替代手动 `removeEventListener`，组件卸载时一行 abort 全部清理。\n\n## 在 Vue 里集成\n\n```javascript\nfunction useFetch(url) {\n  const controller = new AbortController()\n  onScopeDispose(() => controller.abort())\n\n  return fetch(url, { signal: controller.signal })\n}\n```\n\n组件销毁时自动取消未完成的请求。\n\n## 在 Node.js 里也能用\n\n```javascript\nimport { setTimeout } from 'node:timers/promises'\n\nconst controller = new AbortController()\nawait setTimeout(5000, undefined, { signal: controller.signal })\n```\n\nNode 18+ 的标准库 API 普遍支持 `signal`。\n\n## 几个易踩坑\n\n1. **AbortError 不要被全局错误处理上报**：它是预期内的取消\n2. **abort 是同步的**，但已发出的请求需要服务器确认才停\n3. **多次 abort 同一个 controller 是安全的**，不会抛错\n\n## 总结\n\n`AbortController` 是现代异步编程的\"基础设施\"，配合 React/Vue 的生命周期清理，能消除一整类难调试的竞态 bug。\n",
+    "excerpt": "网络请求、定时器、事件监听都能用一个 controller 统一取消。这篇讲透使用场景和坑点。",
+    "author": "EvenKnow",
+    "date": "2025-09-12",
+    "category": "javascript",
+    "tags": [
+      "JavaScript",
+      "AbortController",
+      "异步"
+    ],
+    "featured": false,
+    "readTime": 7,
+    "image": "https://images.pexels.com/photos/1181271/pexels-photo-1181271.jpeg"
+  },
+  {
+    "id": "21",
+    "title": "React Server Components 入门：客户端 / 服务端组件如何分工",
+    "content": "# React Server Components 入门：客户端 / 服务端组件如何分工\n\nServer Components（RSC）是 React 团队赌注最大的新模型。理解它的关键是：**这是一个组件渲染时机的革命，不是一个 API 的改名**。\n\n## 默认是服务端组件\n\nNext.js App Router 里，**所有组件默认在服务器渲染**：\n\n```jsx\n// app/posts/page.tsx — 服务端组件\nimport db from '@/lib/db'\n\nexport default async function Posts() {\n  const posts = await db.posts.findMany()  // 直接读数据库！\n  return <ul>{posts.map(p => <li>{p.title}</li>)}</ul>\n}\n```\n\n服务端组件**没有 `useState`、`useEffect`，因为它们只渲染一次**。\n\n## 标记客户端组件\n\n需要交互的组件加 `'use client'`：\n\n```jsx\n'use client'\n\nexport default function Counter() {\n  const [count, setCount] = useState(0)\n  return <button onClick={() => setCount(count + 1)}>{count}</button>\n}\n```\n\n## 谁该是服务端、谁该是客户端\n\n| 服务端组件 | 客户端组件 |\n| --- | --- |\n| 数据获取 | 鼠标事件 / 键盘 |\n| 大型依赖（markdown 解析、SDK） | useState / useEffect |\n| 不需要交互的展示 | 浏览器 API（window） |\n| Token / 数据库访问 | 第三方交互组件 |\n\n**默认服务端，遇到 hooks 才升级成客户端。**\n\n## 客户端可以\"包\"服务端组件\n\n```jsx\n// 客户端：抽屉\n'use client'\nexport default function Drawer({ children }) {\n  const [open, setOpen] = useState(false)\n  return <div>{open && children}</div>\n}\n\n// 服务端：用法\n<Drawer>\n  <ServerOnlyComponent />\n</Drawer>\n```\n\nchildren 是服务端渲染的，再交给客户端组件去显隐。\n\n## 数据获取直接 await\n\n```jsx\nconst user = await fetch('/api/user').then(r => r.json())\n```\n\n不再需要 `useEffect + setState` 的样板代码。\n\n## 性能差异\n\n- **bundle 体积**：服务端组件不会进客户端 bundle，降 30-50%\n- **首屏速度**：HTML 直接由服务端渲染好返回，无需等 hydration\n- **Waterfall**：所有数据在服务端并行获取，然后一次性下发\n\n## 还在踩的坑\n\n- 第三方库要看是否兼容 RSC（很多老 UI 库还要 `'use client'` 包一层）\n- 客户端 / 服务端边界要清晰，\"穿过 prop\"传函数会报错\n- 部署只能在 Node 环境，纯静态托管支持有限\n\n## 总结\n\nRSC 不是\"更好的 SSR\"，是 React 在重新定义\"组件\"。值得重新学一遍 React。\n",
+    "excerpt": "Next.js 14 把 RSC 推到生产可用。这篇讲清楚客户端组件、服务端组件什么时候各用哪个。",
+    "author": "EvenKnow",
+    "date": "2025-11-05",
+    "category": "react",
+    "tags": [
+      "React",
+      "RSC",
+      "Next.js"
+    ],
+    "featured": false,
+    "readTime": 12,
+    "image": "https://images.pexels.com/photos/177598/pexels-photo-177598.jpeg"
+  },
+  {
+    "id": "22",
+    "title": "Zustand vs Redux Toolkit：2026 年的 React 状态管理选型",
+    "content": "# Zustand vs Redux Toolkit：2026 年的 React 状态管理选型\n\n3 年前 Redux 一统天下，现在 Zustand npm 周下载已经接近 Redux Toolkit。这篇只讲选型。\n\n## Redux Toolkit：还在的理由\n\n```typescript\nconst userSlice = createSlice({\n  name: 'user',\n  initialState: { profile: null, loading: false },\n  reducers: {\n    setProfile: (state, action) => { state.profile = action.payload }\n  },\n  extraReducers: (builder) => {\n    builder.addCase(fetchProfile.fulfilled, (state, action) => {\n      state.profile = action.payload\n    })\n  }\n})\n```\n\n**优势**：DevTools 强、生态完整、time-travel 调试、团队规模大时规则清晰\n\n**代价**：仍然有 store / slice / reducer / action / dispatch 的心智成本\n\n## Zustand：极简派\n\n```typescript\nconst useStore = create<State>((set) => ({\n  profile: null,\n  loading: false,\n  fetchProfile: async () => {\n    set({ loading: true })\n    const profile = await api.getProfile()\n    set({ profile, loading: false })\n  }\n}))\n\n// 组件里\nconst { profile, fetchProfile } = useStore()\n```\n\n**优势**：API 极简、bundle 1.5KB、TypeScript 推导好、不需要 Provider\n\n**代价**：DevTools 弱一些、大型项目缺乏\"一定怎么写\"的约束\n\n## 选型决策\n\n| 场景 | 推荐 |\n| --- | --- |\n| 5 人以下小团队、新项目 | **Zustand** |\n| 中后台、需要严格规范 | **Redux Toolkit** |\n| 跨 tab 同步状态 | Zustand + persist 中间件 |\n| 服务端状态（用户 / 列表） | **不要用 Redux/Zustand**，用 React Query / SWR |\n| 表单 | **react-hook-form**，不要塞进全局 store |\n\n## 老项目迁不迁？\n\n我的建议是**不迁**。Redux 的成本主要在初学期，写熟了不会更慢。换工具的迁移成本远大于收益，除非项目的痛点确实是状态层。\n\n## 还有一个选择：Jotai\n\n```typescript\nconst countAtom = atom(0)\nfunction Counter() {\n  const [count, setCount] = useAtom(countAtom)\n}\n```\n\n**原子化**模型，每个 atom 独立。适合**很多小状态、相互组合**的场景，比如表单字段的派生计算。\n\n## 我现在的默认选择\n\n新项目：**Zustand + React Query**（前者管 UI 状态，后者管服务端数据）。简单、类型好、bundle 小。\n\n只有当团队 ≥ 8 人 + 状态复杂度高（撤销重做、time-travel）时才会回到 Redux。\n\n## 总结\n\n工具是手段，**约定才是关键**。无论选哪个，团队内部约定一致比技术选型本身重要 10 倍。\n",
+    "excerpt": "新项目用谁、老项目要不要迁、什么时候选 Jotai？这篇按团队规模和场景给具体建议。",
+    "author": "EvenKnow",
+    "date": "2025-08-28",
+    "category": "react",
+    "tags": [
+      "React",
+      "Zustand",
+      "Redux"
+    ],
+    "featured": false,
+    "readTime": 9,
+    "image": "https://images.pexels.com/photos/270632/pexels-photo-270632.jpeg"
+  },
+  {
+    "id": "23",
+    "title": "Taro 多端开发实战：一份代码同时跑微信、支付宝、H5",
+    "content": "# Taro 多端开发实战：一份代码同时跑微信、支付宝、H5\n\nTaro 是京东开源的多端开发框架，编译时把 React/Vue 语法转成各端原生小程序代码。我们 SaaS 项目的\"二手奢侈品销售\"小程序就是 Taro 写的，同时跑微信、支付宝、H5 三端。\n\n## 项目结构\n\n```\nsrc/\n├── pages/\n│   ├── index/        # 各端共用页面\n│   └── checkout/\n├── components/\n├── utils/\n│   └── env.ts        # 各端能力差异封装\n├── app.config.ts\n└── app.tsx\n```\n\n## 写法：和 React 几乎一样\n\n```tsx\nimport { View, Button, Text } from '@tarojs/components'\nimport Taro from '@tarojs/taro'\n\nexport default function Home() {\n  const goCheckout = () => {\n    Taro.navigateTo({ url: '/pages/checkout/index' })\n  }\n  return (\n    <View>\n      <Text>商品列表</Text>\n      <Button onClick={goCheckout}>结算</Button>\n    </View>\n  )\n}\n```\n\n只用 Taro 提供的组件（`View`、`Text`、`Button`），不要用原生 `div` / `span`。\n\n## 各端差异处理\n\n### 1. 编译时差异\n\n```tsx\n// 微信小程序专属\n{process.env.TARO_ENV === 'weapp' && <WechatLogin />}\n// 支付宝专属\n{process.env.TARO_ENV === 'alipay' && <AlipayPay />}\n// H5\n{process.env.TARO_ENV === 'h5' && <WebHeader />}\n```\n\n### 2. 文件名后缀差异\n\n```\ncheckout.weapp.tsx    # 微信版本\ncheckout.alipay.tsx   # 支付宝版本\ncheckout.tsx          # 默认（H5 等）\n```\n\n打包时 Taro 自动选对应文件。\n\n## 踩坑总结\n\n### 1. **样式单位**\n\nH5 用 px 或 rem，小程序用 rpx。Taro 默认 1px = 2rpx，但写大了字号会出问题。建议统一用 rpx，编译时由 Taro 处理。\n\n### 2. **路由栈深度**\n\n微信小程序最大 10 层，超过会报错。复杂流程要用 `redirectTo` 替换栈而不是 `navigateTo` 入栈。\n\n### 3. **Web 平台禁用 API**\n\n`Taro.scanCode` 在 H5 不可用。封装成 `safeCall(fn, fallback)` 统一处理。\n\n### 4. **图片地址**\n\n微信要求图片走 https，本地文件用 `require` 或绝对路径。\n\n## 性能建议\n\n- 用 `<MovableArea>` 而不是手写 touchmove\n- 长列表用 `<ScrollView>` 自带虚拟化\n- 图片必加 `lazy-load`\n- 分包：把核心页放主包，其他放分包\n\n## 真实工作量对比\n\n我们项目原计划三端各开发：3 人 × 3 端 × 2 月 = 18 人月。Taro 后实际用了 6 人月，减少 70%。\n\n## 总结\n\nTaro 不是银弹，但选对场景能极大节省成本。小程序是核心场景、H5 顺带做、不用追求每端原生体验时，Taro 是最佳选择。\n",
+    "excerpt": "Taro 不是\"伪多端\"，是真实的工程级跨端方案。这篇讲我们项目里真实的目录结构与适配技巧。",
+    "author": "EvenKnow",
+    "date": "2025-11-30",
+    "category": "mini-program",
+    "tags": [
+      "Taro",
+      "小程序",
+      "跨端"
+    ],
+    "featured": false,
+    "readTime": 11,
+    "image": "https://images.pexels.com/photos/4348401/pexels-photo-4348401.jpeg"
+  },
+  {
+    "id": "24",
+    "title": "Uniapp vs Taro：跨端开发框架的真实对比",
+    "content": "# Uniapp vs Taro：跨端开发框架的真实对比\n\nUniapp 和 Taro 是国内跨端小程序开发的两大主流方案。我两个项目都用过，这篇只讲实操差异。\n\n## 1. 框架基础\n\n| | Uniapp | Taro |\n| --- | --- | --- |\n| 技术栈 | Vue（默认）、可选 React | React、Vue、Nerv |\n| 出品方 | DCloud | 京东 |\n| 推出时间 | 2018 | 2018 |\n| 编译方式 | 运行时为主 | 编译时 + 运行时 |\n\n## 2. 学习成本\n\n**Uniapp**：和原生小程序语法接近，**会写微信小程序就能写 Uniapp**。\n\n```vue\n<template>\n  <view class=\"container\">\n    <text>{{ title }}</text>\n    <button @click=\"onClick\">点击</button>\n  </view>\n</template>\n```\n\n**Taro 3.x**：写法和 React/Vue **完全一样**，只是组件换成 Taro 组件。\n\n```tsx\n<View className=\"container\">\n  <Text>{title}</Text>\n  <Button onClick={onClick}>点击</Button>\n</View>\n```\n\n如果团队是 React 派 → Taro。如果是小程序原生派 → Uniapp。\n\n## 3. 多端覆盖\n\n| 平台 | Uniapp | Taro |\n| --- | --- | --- |\n| 微信小程序 | ✅ | ✅ |\n| 支付宝小程序 | ✅ | ✅ |\n| 抖音小程序 | ✅ | ✅ |\n| 百度小程序 | ✅ | ✅ |\n| H5 | ✅ | ✅ |\n| iOS / Android（编译为原生） | ✅（uni-app x） | △（需要 Taro Native） |\n| 鸿蒙 | ✅ | ✅ |\n\nUniapp 在 App 端更成熟（uni-app x 接近 0 损耗）。\n\n## 4. 性能\n\n**Uniapp** 默认运行时方案，跨端兼容性好但有 30%-50% 性能损耗（相比原生）。\n\n**Taro 3.x** 编译时为主，性能损耗 10%-20%。\n\n但**两者性能差异在业务页面里几乎感知不到**，除非是动画密集场景。\n\n## 5. 生态\n\n| | Uniapp | Taro |\n| --- | --- | --- |\n| 插件市场 | DCloud 插件市场（庞大、参差） | npm 生态 |\n| UI 库 | uView、uni-ui | NutUI、Taro UI |\n| TypeScript | 较弱 | 一等公民 |\n| 团队协作 | Vue 习惯优先 | React 习惯优先 |\n\n## 6. 选型建议\n\n| 场景 | 推荐 |\n| --- | --- |\n| 团队是 Vue 派 + 要做 App | **Uniapp** |\n| 团队是 React 派 + 主战场是小程序 | **Taro** |\n| 用 TypeScript 写大型项目 | **Taro** |\n| 兼职做小程序、想快速上线 | **Uniapp** |\n\n## 7. 共同的痛\n\n- 各家小程序 API 差异巨大，跨端意味着兼容层\n- DevTools 体验远不如 Web\n- 调试复杂多端 bug 很难，需要在每个真机上验证\n\n## 总结\n\n我的项目按团队选：React 团队选 Taro，Vue 团队选 Uniapp。技术上没有明显赢家，**人才和生态匹配**才是关键。\n",
+    "excerpt": "都说自己\"一份代码全平台跑\"，到底有什么差别？这篇按团队场景给具体选型建议。",
+    "author": "EvenKnow",
+    "date": "2025-10-08",
+    "category": "mini-program",
+    "tags": [
+      "Uniapp",
+      "Taro",
+      "跨端"
+    ],
+    "featured": false,
+    "readTime": 9,
+    "image": "https://images.pexels.com/photos/4348404/pexels-photo-4348404.jpeg"
+  },
+  {
+    "id": "25",
+    "title": "微信小程序性能优化：包大小、首屏、长列表三板斧",
+    "content": "# 微信小程序性能优化：包大小、首屏、长列表三板斧\n\n线上跑了 2 年的小程序最常被产品骂的就是这三件事：**包太大、加载慢、列表卡**。这篇是我项目优化的真实经验。\n\n## 板斧一：包体积\n\n### 1. 分包\n\n主包放核心首屏（<2MB），其他放分包：\n\n```json\n{\n  \"pages\": [\"pages/index/index\", \"pages/login/login\"],\n  \"subpackages\": [\n    {\n      \"root\": \"package-A\",\n      \"pages\": [\"product/list\", \"product/detail\"]\n    },\n    {\n      \"root\": \"package-B\",\n      \"pages\": [\"order/list\", \"order/detail\"]\n    }\n  ]\n}\n```\n\n每个分包独立下载，按需加载。\n\n### 2. 分包预下载\n\n```json\n{\n  \"preloadRule\": {\n    \"pages/index/index\": {\n      \"network\": \"all\",\n      \"packages\": [\"package-A\"]\n    }\n  }\n}\n```\n\n进入首页时偷偷下载 package-A，用户点进去秒开。\n\n### 3. 图片走 CDN\n\n不要把图放进项目里！每张图 200KB，10 张就 2MB。\n所有静态图传 CDN，引用 https URL。\n\n### 4. 移除未使用代码\n\n```bash\n# 微信开发者工具：详情 → 代码依赖分析\n# 看哪些文件 / 模块没被引用\n```\n\n## 板斧二：首屏\n\n### 1. 骨架屏\n\n```html\n<!-- 数据未到时 -->\n<view class=\"skeleton\" wx:if=\"{{loading}}\">\n  <view class=\"skeleton-line\"></view>\n  <view class=\"skeleton-line\"></view>\n</view>\n\n<!-- 数据到了 -->\n<view wx:else>{{realContent}}</view>\n```\n\n减少\"白屏 → 内容\"的视觉冲击。\n\n### 2. 减少首屏 setData\n\n```javascript\n// 错误：分多次 setData\nthis.setData({ a: 1 })\nthis.setData({ b: 2 })\nthis.setData({ c: 3 })\n\n// 正确：一次性\nthis.setData({ a: 1, b: 2, c: 3 })\n```\n\n每次 setData 都触发渲染层重绘，合并能省 70% 渲染时间。\n\n### 3. 数据预拉\n\nApp.onLaunch 里就开始拉首页数据：\n\n```javascript\nApp({\n  onLaunch() {\n    this.globalData.homeDataPromise = wx.request({\n      url: '/api/home',\n      method: 'GET'\n    })\n  }\n})\n\n// Page 里\nonLoad() {\n  getApp().globalData.homeDataPromise.then(res => {\n    this.setData({ data: res.data })\n  })\n}\n```\n\n## 板斧三：长列表\n\n### 1. 虚拟列表\n\n`<recycle-view>` 或 `wxs` 自实现：只渲染可视区域 + 上下各一屏。\n\n### 2. 分页加载\n\n```javascript\nonReachBottom() {\n  if (this.loading) return\n  this.loading = true\n  this.loadMore()\n}\n```\n\n### 3. 图片懒加载\n\n```html\n<image src=\"{{item.cover}}\" lazy-load=\"true\" />\n```\n\n只加载视口附近的图片。\n\n### 4. 用 `key` 优化列表 diff\n\n```html\n<view wx:for=\"{{list}}\" wx:key=\"id\">{{item.title}}</view>\n```\n\n`wx:key` 让框架能精准定位变更项，比 index 高效得多。\n\n## 实战数据\n\n我们项目优化前后对比：\n\n| 指标 | 优化前 | 优化后 |\n| --- | --- | --- |\n| 主包 | 3.8 MB | 1.4 MB |\n| 首屏白屏 | 4.2s | 1.6s |\n| 列表滚动 fps | 30 | 58 |\n\n## 总结\n\n性能优化没有银弹，**先用 DevTools 性能面板找到具体瓶颈**，再针对性下手。盲目优化往往做无用功。\n",
+    "excerpt": "包超 2MB 上传不了，首屏 5 秒用户跑光，长列表卡到崩溃—— 这三个高频痛点的实战解法。",
+    "author": "EvenKnow",
+    "date": "2025-09-05",
+    "category": "mini-program",
+    "tags": [
+      "微信小程序",
+      "性能优化"
+    ],
+    "featured": false,
+    "readTime": 10,
+    "image": "https://images.pexels.com/photos/19872478/pexels-photo-19872478.jpeg"
+  },
+  {
+    "id": "26",
+    "title": "MSW 上手：让接口契约成为前端测试的第一公民",
+    "content": "# MSW 上手：让接口契约成为前端测试的第一公民\n\nMSW（Mock Service Worker）通过浏览器 / Node 的 service worker 拦截网络请求，**在网络层而不是代码层 mock**。这一点把它和所有其他 mock 工具拉开了距离。\n\n## 为什么不用 axios mock 适配器？\n\n老方案：\n\n```javascript\n// 直接 mock axios\njest.mock('axios')\naxios.get.mockResolvedValue({ data: { name: 'Tom' } })\n```\n\n问题：\n1. **代码耦合**：组件如果改用 fetch，mock 全白瞎\n2. **不能在浏览器跑**：开发期想看真实页面也得起后端\n3. **多个组件共享 mock 困难**\n\n## MSW 的方案\n\n```typescript\n// mocks/handlers.ts\nimport { http, HttpResponse } from 'msw'\n\nexport const handlers = [\n  http.get('/api/user/:id', ({ params }) => {\n    return HttpResponse.json({\n      id: params.id,\n      name: 'Tom',\n      email: 'tom@example.com'\n    })\n  }),\n  http.post('/api/login', async ({ request }) => {\n    const body = await request.json()\n    if (body.password === 'wrong') {\n      return HttpResponse.json({ error: '密码错误' }, { status: 401 })\n    }\n    return HttpResponse.json({ token: 'fake-jwt' })\n  })\n]\n```\n\n## 浏览器开发用\n\n```typescript\n// mocks/browser.ts\nimport { setupWorker } from 'msw/browser'\nimport { handlers } from './handlers'\n\nexport const worker = setupWorker(...handlers)\n\n// main.ts\nif (import.meta.env.DEV) {\n  const { worker } = await import('./mocks/browser')\n  await worker.start()\n}\n```\n\n启动后无后端也能完整跑前端，浏览器 Network 面板里看到的是 mock 响应。\n\n## 单元测试用\n\n```typescript\n// vitest.config.ts → setupFiles\nimport { setupServer } from 'msw/node'\nimport { handlers } from './mocks/handlers'\n\nconst server = setupServer(...handlers)\nbeforeAll(() => server.listen())\nafterEach(() => server.resetHandlers())\nafterAll(() => server.close())\n```\n\n测试里就直接调真实的 fetch / axios，被 MSW 接管。\n\n## 多状态切换\n\n```typescript\ntest('登录失败时显示错误', async () => {\n  server.use(\n    http.post('/api/login', () =>\n      HttpResponse.json({ error: '密码错误' }, { status: 401 })\n    )\n  )\n\n  render(<LoginForm />)\n  fireEvent.click(screen.getByText('登录'))\n  expect(await screen.findByText('密码错误')).toBeInTheDocument()\n})\n```\n\n每个 test 临时覆盖某个 endpoint，测完自动 reset。\n\n## 集成 Storybook\n\n```typescript\n// .storybook/preview.ts\nimport { initialize, mswLoader } from 'msw-storybook-addon'\ninitialize()\nexport const loaders = [mswLoader]\n\n// MyComponent.stories.tsx\nexport const Default = {\n  parameters: {\n    msw: { handlers: [...] }\n  }\n}\n```\n\n每个 story 一份 mock，UI 组件 + mock 数据完整搭配。\n\n## 真实 ROI\n\n我们项目接入 MSW 之后：\n\n- **后端联调延迟下降 80%**：前端不再等接口\n- **bug 复现成本降一半**：提供一份 handler 就能稳定复现\n- **测试可读性提升**：handler 即接口契约，新人看一眼就懂\n\n## 总结\n\nMSW 把 mock 从\"测试工具\"提升为\"工程基础设施\"。一份 handler 同时服务开发、测试、Storybook，**前后端约定第一次有了可执行的载体**。\n",
+    "excerpt": "为什么我们团队再也不写本地 mock？因为 MSW 让 mock 同时是文档、是测试夹具、是 Storybook 数据源。",
+    "author": "EvenKnow",
+    "date": "2025-12-20",
+    "category": "testing",
+    "tags": [
+      "MSW",
+      "测试",
+      "Mock"
+    ],
+    "featured": true,
+    "readTime": 10,
+    "image": "https://images.pexels.com/photos/270408/pexels-photo-270408.jpeg"
+  },
+  {
+    "id": "27",
+    "title": "Vitest 单元测试：从 0 到工程级覆盖率",
+    "content": "# Vitest 单元测试：从 0 到工程级覆盖率\n\nVitest 是 Vite 生态原生的测试框架，跟 Jest API 高度兼容但快 5 倍以上。这篇讲我项目里的真实搭建过程。\n\n## 安装\n\n```bash\npnpm add -D vitest @vitest/ui @vue/test-utils happy-dom\n```\n\n## 配置\n\n```typescript\n// vitest.config.ts\nimport { defineConfig } from 'vitest/config'\nimport vue from '@vitejs/plugin-vue'\nimport path from 'path'\n\nexport default defineConfig({\n  plugins: [vue()],\n  test: {\n    environment: 'happy-dom',  // 比 jsdom 快 2 倍\n    globals: true,             // 不用 import describe/test\n    setupFiles: ['./test/setup.ts'],\n    coverage: {\n      reporter: ['text', 'html'],\n      exclude: ['**/*.spec.ts', '**/types.ts']\n    }\n  },\n  resolve: {\n    alias: { '@': path.resolve(__dirname, './src') }\n  }\n})\n```\n\n## 第一个测试\n\n```typescript\n// utils/format.spec.ts\nimport { describe, test, expect } from 'vitest'\nimport { formatDate } from './format'\n\ndescribe('formatDate', () => {\n  test('转换 ISO 字符串', () => {\n    expect(formatDate('2025-01-15')).toBe('2025年1月15日')\n  })\n\n  test('null 返回空串', () => {\n    expect(formatDate(null)).toBe('')\n  })\n})\n```\n\n## 测试 Vue 组件\n\n```typescript\nimport { mount } from '@vue/test-utils'\nimport Counter from './Counter.vue'\n\ntest('点击计数', async () => {\n  const wrapper = mount(Counter)\n  expect(wrapper.text()).toContain('0')\n\n  await wrapper.find('button').trigger('click')\n  expect(wrapper.text()).toContain('1')\n})\n```\n\n## 测试 Pinia store\n\n```typescript\nimport { setActivePinia, createPinia } from 'pinia'\nimport { useUserStore } from './stores/user'\n\nbeforeEach(() => setActivePinia(createPinia()))\n\ntest('登录后更新 profile', async () => {\n  const store = useUserStore()\n  await store.login('tom', '123456')\n  expect(store.profile?.name).toBe('Tom')\n})\n```\n\n## 测试异步：mock fetch\n\n配合 MSW（推荐）或者直接 vi.fn：\n\n```typescript\nimport { vi } from 'vitest'\n\nglobal.fetch = vi.fn(() =>\n  Promise.resolve({\n    json: () => Promise.resolve({ data: 'ok' })\n  })\n) as any\n```\n\n## Watch 模式 + UI\n\n```bash\npnpm vitest --ui\n```\n\n在浏览器里看测试运行情况，比命令行直观 10 倍。\n\n## 覆盖率门槛\n\n```typescript\n// vitest.config.ts\ntest: {\n  coverage: {\n    thresholds: {\n      lines: 70,\n      functions: 70,\n      branches: 60,\n      statements: 70\n    }\n  }\n}\n```\n\nCI 里 `vitest --coverage` 不达标直接失败。\n\n## 我们的测试金字塔\n\n| 层级 | 工具 | 数量比 |\n| --- | --- | --- |\n| 单元测试 | Vitest | 70% |\n| 集成测试 | Vitest + MSW | 20% |\n| E2E | Playwright | 10% |\n\n不要追求 100% 覆盖率，**关键路径 100%、辅助代码 50% 即可**。\n\n## 总结\n\nVitest 的 DX 好到测试不再是负担。配上 MSW 和 Vue Test Utils，一份配置应付 95% 的测试需求。\n",
+    "excerpt": "Jest 老了，Vitest 跑得快、配置少、原生 ESM。这篇讲怎么从零搭起来一套真能跑的单测体系。",
+    "author": "EvenKnow",
+    "date": "2025-10-15",
+    "category": "testing",
+    "tags": [
+      "Vitest",
+      "单元测试"
+    ],
+    "featured": false,
+    "readTime": 11,
+    "image": "https://images.pexels.com/photos/270637/pexels-photo-270637.jpeg"
+  },
+  {
+    "id": "28",
+    "title": "前端 E2E：Playwright vs Cypress 选型与团队实践",
+    "content": "# 前端 E2E：Playwright vs Cypress 选型与团队实践\n\nE2E（End-to-End）测试是\"模拟真实用户\"的最后一道防线。Cypress 和 Playwright 是当前最成熟的两个选项，我两个项目都跑过，最终选了 Playwright。\n\n## 一句话总结差异\n\n- **Cypress**：DX 一流，调试体验最佳，但**只跑 Chromium 系**\n- **Playwright**：跨浏览器（Chrome / Firefox / Safari），并发好，**API 更接近\"真用户\"**\n\n## 1. 安装与起步\n\n### Playwright\n```bash\npnpm create playwright\n```\n\n```typescript\nimport { test, expect } from '@playwright/test'\n\ntest('登录流程', async ({ page }) => {\n  await page.goto('/login')\n  await page.getByLabel('用户名').fill('tom')\n  await page.getByLabel('密码').fill('123456')\n  await page.getByRole('button', { name: '登录' }).click()\n  await expect(page).toHaveURL('/dashboard')\n})\n```\n\n### Cypress\n\n```javascript\ndescribe('登录', () => {\n  it('用密码登录', () => {\n    cy.visit('/login')\n    cy.get('[data-test=username]').type('tom')\n    cy.get('[data-test=password]').type('123456')\n    cy.get('[data-test=submit]').click()\n    cy.url().should('include', '/dashboard')\n  })\n})\n```\n\n## 2. 选择器哲学\n\nCypress 推荐 `data-test=*` 自定义属性，**和实现耦合**。\nPlaywright 推荐 `getByRole` / `getByLabel`，**和\"用户怎么看页面\"对齐**，更接近真实用户。\n\n## 3. 调试\n\n**Cypress**：浏览器打开测试运行器，每一步快照，时光机式回看。\n\n**Playwright**：`pnpm playwright test --debug` 进入 inspector 模式，可单步、可暂停、可改选择器实时预览。\n\n调试体验都不错，Cypress 略胜半子。\n\n## 4. 跨浏览器\n\n```typescript\n// playwright.config.ts\nprojects: [\n  { name: 'chromium', use: devices['Desktop Chrome'] },\n  { name: 'firefox', use: devices['Desktop Firefox'] },\n  { name: 'webkit', use: devices['Desktop Safari'] },\n  { name: 'mobile', use: devices['iPhone 13'] }\n]\n```\n\n一份测试跑 4 个环境。Cypress 这块差距大。\n\n## 5. 并行执行\n\nPlaywright 默认 worker 模式，本机多 worker 并行。CI 里跑 100 个 case，Playwright 4-5 分钟，Cypress 接近 15 分钟。\n\n## 6. CI 集成\n\nGitHub Actions：\n\n```yaml\n- run: pnpm install\n- run: pnpm playwright install --with-deps\n- run: pnpm playwright test\n- uses: actions/upload-artifact@v4\n  if: failure()\n  with:\n    name: playwright-report\n    path: playwright-report/\n```\n\n失败时 trace 文件保存为 artifact，**包括失败前后的 DOM、网络、console**，事后分析必备。\n\n## 7. 我们的选型决策\n\n最终选 Playwright 的三个理由：\n1. **支持 Safari**：业务覆盖 iOS Safari 用户，必须验证\n2. **并发省 CI 时间**：每天 50 次 PR，CI 时长 × 3 太致命\n3. **Microsoft 维护，更新积极**：Cypress 商业化压力下迭代变慢\n\n## 8. E2E 测多少？\n\n不要追求\"覆盖所有页面\"。我们的原则：\n\n- **核心 happy path 全覆盖**：登录、下单、支付、退款\n- **修过 P0 bug 的场景**：避免回归\n- **每个版本最多 30 个用例**：超过维护成本失控\n\n## 总结\n\nE2E 是\"最后的防线\"而不是\"主力测试\"。配合单测 + MSW 集成测试，E2E 只测真正\"用户故事\"。Playwright 是 2026 年我会优先选的工具。\n",
+    "excerpt": "Cypress 老牌易用、Playwright 新锐多浏览器。我们团队最终选了 Playwright，理由有三个。",
+    "author": "EvenKnow",
+    "date": "2025-08-22",
+    "category": "testing",
+    "tags": [
+      "Playwright",
+      "Cypress",
+      "E2E"
+    ],
+    "featured": false,
+    "readTime": 9,
+    "image": "https://images.pexels.com/photos/4709285/pexels-photo-4709285.jpeg"
+  },
+  {
     "id": "9",
     "title": "Claude Code 上手指南：从 hooks 到 MCP 的完整工作流",
     "content": "# Claude Code 上手指南：从 hooks 到 MCP 的完整工作流\n\nClaude Code 是 Anthropic 推出的官方 CLI，把 Claude 直接搬到你的终端和编辑器里。和直接在网页对话相比，它最大的差异是：**能看到你的代码、能改你的代码、能跑你的命令**，而且整个过程是可审计、可拦截、可扩展的。\n\n## 为什么选择 Claude Code\n\n- 原生 IDE 集成（VS Code、JetBrains），编辑器里直接看 diff\n- 工具调用全部可见，每个 Bash/Edit/Write 都能被 hook 拦截\n- 支持 MCP（Model Context Protocol），把外部系统挂载成\"工具\"\n- 一份配置走遍 CLI / 桌面 / Web\n\n## 快速上手\n\n```bash\n# 安装\nnpm install -g @anthropic-ai/claude-code\n\n# 在项目里启动\ncd my-project\nclaude\n```\n\n第一次运行会要求登录 Anthropic 账号，之后所有会话都在当前目录上下文里执行。\n\n## CLAUDE.md：项目级记忆\n\n在项目根目录放一个 `CLAUDE.md`，里面写项目约定、技术栈、注意事项，Claude 每次启动都会自动读取。\n\n```markdown\n# 项目说明\n\n- 包管理用 pnpm，不要用 npm/yarn\n- 提交信息用中文，前缀使用 Feat/Fix/Update\n- 测试框架是 Vitest，不要引入 Jest\n- API mock 走 MSW，禁止直接 mock fetch\n```\n\n这是替代\"每次提醒一遍\"最有效的方式。\n\n## Hooks：拦截工具调用\n\nHooks 让你在 Claude 调用工具**前后**插入自己的逻辑。最常用的几种：\n\n```json\n{\n  \"hooks\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"Bash\",\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \".claude/hooks/check-bash.sh\" }\n        ]\n      }\n    ],\n    \"UserPromptSubmit\": [\n      {\n        \"hooks\": [\n          { \"type\": \"command\", \"command\": \"rtk-rewrite\" }\n        ]\n      }\n    ]\n  }\n}\n```\n\n我自己用 hooks 做的几件事：\n- 把 `git`/`gh`/`pnpm` 等高频命令通过代理重写，节省 token\n- `git commit` 前自动跑 lint，避免污染历史\n- 提交信息里强制带上 Co-Authored-By\n\n## Slash Commands：自定义流程\n\n把你常用的多步流程写成 `/命令`：\n\n```markdown\n---\ndescription: 把当前分支推到 GitHub 并打开 PR\n---\n\n1. 跑 `pnpm build` 验证\n2. `git push origin HEAD`\n3. `gh pr create --fill`\n```\n\n放到 `.claude/commands/ship.md`，下次输入 `/ship` 就能一键触发。\n\n## MCP：把外部世界接进来\n\nMCP 是一个标准协议，让 Claude 能调用第三方 server 提供的工具。常见 server：\n\n- `@modelcontextprotocol/server-filesystem` 安全访问指定目录\n- `@modelcontextprotocol/server-github` 直接操作 issue/PR\n- 自建 server 暴露内部 API\n\n```json\n{\n  \"mcpServers\": {\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": { \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\" }\n    }\n  }\n}\n```\n\n配置完成后，Claude 就能直接 \"帮我看下 PR #123 的 CI 失败原因\"。\n\n## 总结\n\nClaude Code 的强大不在于模型本身，而在于它把模型变成了**可编排、可拦截、可扩展**的开发伙伴。先把 `CLAUDE.md` 写好，再按需加 hooks 和 MCP，几乎所有重复的开发流程都能交给它。\n",

@@ -12,6 +12,10 @@
         <router-link to="/" class="nav-link" :class="{ 'nav-link-active': $route.name === 'Home' }">
           首页
         </router-link>
+        <router-link to="/share" class="nav-link relative" :class="{ 'nav-link-active': String($route.name).startsWith('Share') }">
+          知识分享
+          <span class="absolute -top-1 -right-3 px-1 py-0.5 text-[9px] font-bold rounded bg-accent-500 text-white leading-none">NEW</span>
+        </router-link>
         <router-link to="/archive" class="nav-link" :class="{ 'nav-link-active': $route.name === 'Archive' }">
           归档
         </router-link>
@@ -100,6 +104,9 @@
       <div class="px-4 py-4 space-y-4">
         <router-link to="/" class="block nav-link" @click="closeMobileMenu">
           首页
+        </router-link>
+        <router-link to="/share" class="block nav-link" @click="closeMobileMenu">
+          知识分享 <span class="ml-1 px-1 text-[9px] font-bold rounded bg-accent-500 text-white">NEW</span>
         </router-link>
         <router-link to="/archive" class="block nav-link" @click="closeMobileMenu">
           归档

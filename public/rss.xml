@@ -6,7 +6,7 @@
     <description>专注 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流。</description>
     <language>zh-CN</language>
     <atom:link href="https://my-blog.example.com/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 08 May 2026 06:37:24 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 08 May 2026 06:54:28 GMT</lastBuildDate>
     <item>
       <title>Claude Code 上手指南：从 hooks 到 MCP 的完整工作流</title>
       <link>https://my-blog.example.com/post/9</link>
@@ -44,76 +44,148 @@
       <description><![CDATA[给一个跑了 3 年的老项目接入 MCP 的实战记录。从 filesystem-server 起步，逐步接入只读数据库和自建 Notion server，让 AI 从信息接收者变成主动检索者。]]></description>
     </item>
     <item>
-      <title>Vue 3 Composition API 完全指南</title>
-      <link>https://my-blog.example.com/post/1</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/1</guid>
-      <pubDate>Mon, 15 Jan 2024 00:00:00 GMT</pubDate>
+      <title>MSW 上手：让接口契约成为前端测试的第一公民</title>
+      <link>https://my-blog.example.com/post/26</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/26</guid>
+      <pubDate>Sat, 20 Dec 2025 00:00:00 GMT</pubDate>
       <author>EvenKnow</author>
-      <category>vue</category>
-      <description><![CDATA[深入了解 Vue 3 Composition API 的使用方法、优势和最佳实践，助你写出更优雅的 Vue 代码。]]></description>
+      <category>testing</category>
+      <description><![CDATA[为什么我们团队再也不写本地 mock？因为 MSW 让 mock 同时是文档、是测试夹具、是 Storybook 数据源。]]></description>
     </item>
     <item>
-      <title>TypeScript 进阶技巧：泛型与类型体操</title>
-      <link>https://my-blog.example.com/post/2</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/2</guid>
-      <pubDate>Wed, 10 Jan 2024 00:00:00 GMT</pubDate>
-      <author>EvenKnow</author>
-      <category>typescript</category>
-      <description><![CDATA[探索 TypeScript 的高级类型系统，学习泛型、条件类型、映射类型等进阶技巧。]]></description>
-    </item>
-    <item>
-      <title>现代 CSS 布局：Grid 与 Flexbox 的艺术</title>
-      <link>https://my-blog.example.com/post/3</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/3</guid>
-      <pubDate>Fri, 05 Jan 2024 00:00:00 GMT</pubDate>
-      <author>EvenKnow</author>
-      <category>css</category>
-      <description><![CDATA[深入学习 CSS Grid 和 Flexbox，掌握现代 Web 布局的核心技术和最佳实践。]]></description>
-    </item>
-    <item>
-      <title>Node.js 性能优化实战指南</title>
-      <link>https://my-blog.example.com/post/4</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/4</guid>
-      <pubDate>Mon, 01 Jan 2024 00:00:00 GMT</pubDate>
-      <author>EvenKnow</author>
-      <category>engineering</category>
-      <description><![CDATA[全面介绍 Node.js 应用的性能优化策略，从内存管理到集群部署的实战经验分享。]]></description>
-    </item>
-    <item>
-      <title>前端工程化：从零搭建现代化开发环境</title>
-      <link>https://my-blog.example.com/post/5</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/5</guid>
-      <pubDate>Thu, 28 Dec 2023 00:00:00 GMT</pubDate>
-      <author>EvenKnow</author>
-      <category>engineering</category>
-      <description><![CDATA[详细介绍前端工程化的完整流程，包括开发环境搭建、代码质量保证、构建优化和 CI/CD 流程。]]></description>
-    </item>
-    <item>
-      <title>JavaScript 异步编程的演进：从回调到 async/await</title>
-      <link>https://my-blog.example.com/post/6</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/6</guid>
-      <pubDate>Mon, 25 Dec 2023 00:00:00 GMT</pubDate>
+      <title>现代 JavaScript：可选链、空值合并与 Top-level await 的实战</title>
+      <link>https://my-blog.example.com/post/19</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/19</guid>
+      <pubDate>Mon, 15 Dec 2025 00:00:00 GMT</pubDate>
       <author>EvenKnow</author>
       <category>javascript</category>
-      <description><![CDATA[深入理解 JavaScript 异步编程的发展历程，掌握从回调函数到 async/await 的各种异步处理方式。]]></description>
+      <description><![CDATA[ES2020+ 那些实用语法你都用上了吗？这篇把高频特性按"少写多少代码"排序梳理。]]></description>
     </item>
     <item>
-      <title>React Hooks 深度解析与实践</title>
-      <link>https://my-blog.example.com/post/7</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/7</guid>
-      <pubDate>Wed, 20 Dec 2023 00:00:00 GMT</pubDate>
+      <title>Tailwind CSS 实战：从&apos;类名地狱&apos;到享受其中</title>
+      <link>https://my-blog.example.com/post/17</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/17</guid>
+      <pubDate>Mon, 08 Dec 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>css</category>
+      <description><![CDATA[Tailwind 不是反 CSS 模式，而是把 CSS 变成可组合的乐高。这篇讲怎么把它用顺手。]]></description>
+    </item>
+    <item>
+      <title>Taro 多端开发实战：一份代码同时跑微信、支付宝、H5</title>
+      <link>https://my-blog.example.com/post/23</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/23</guid>
+      <pubDate>Sun, 30 Nov 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>mini-program</category>
+      <description><![CDATA[Taro 不是"伪多端"，是真实的工程级跨端方案。这篇讲我们项目里真实的目录结构与适配技巧。]]></description>
+    </item>
+    <item>
+      <title>TypeScript tsconfig 关键项详解：项目踩过的坑都在这</title>
+      <link>https://my-blog.example.com/post/15</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/15</guid>
+      <pubDate>Tue, 25 Nov 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>typescript</category>
+      <description><![CDATA[strict、moduleResolution、paths、composite—— 那些"配错就编译失败"的字段全梳理一遍。]]></description>
+    </item>
+    <item>
+      <title>Pinia 实战：state、getter、action 的工程级用法</title>
+      <link>https://my-blog.example.com/post/13</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/13</guid>
+      <pubDate>Wed, 12 Nov 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>vue</category>
+      <description><![CDATA[Vuex 已经够用，为什么团队都在迁 Pinia？这篇把 store 拆分、持久化、跨组件复用三件事讲透。]]></description>
+    </item>
+    <item>
+      <title>React Server Components 入门：客户端 / 服务端组件如何分工</title>
+      <link>https://my-blog.example.com/post/21</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/21</guid>
+      <pubDate>Wed, 05 Nov 2025 00:00:00 GMT</pubDate>
       <author>EvenKnow</author>
       <category>react</category>
-      <description><![CDATA[深入探讨 React Hooks 的原理和实践，包括内置 Hooks、自定义 Hooks 和性能优化技巧。]]></description>
+      <description><![CDATA[Next.js 14 把 RSC 推到生产可用。这篇讲清楚客户端组件、服务端组件什么时候各用哪个。]]></description>
     </item>
     <item>
-      <title>Web 安全基础：防御常见攻击</title>
-      <link>https://my-blog.example.com/post/8</link>
-      <guid isPermaLink="true">https://my-blog.example.com/post/8</guid>
-      <pubDate>Fri, 15 Dec 2023 00:00:00 GMT</pubDate>
+      <title>Vue3 自定义组合函数（Composables）设计指南</title>
+      <link>https://my-blog.example.com/post/14</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/14</guid>
+      <pubDate>Mon, 20 Oct 2025 00:00:00 GMT</pubDate>
       <author>EvenKnow</author>
-      <category>engineering</category>
-      <description><![CDATA[全面介绍 Web 应用安全基础知识，包括 XSS、CSRF、SQL 注入等常见攻击的防御策略。]]></description>
+      <category>vue</category>
+      <description><![CDATA[useFetch、useDebounce、useLocalStorage—— 自定义组合函数才是 Composition API 的真正杀手锏。]]></description>
+    </item>
+    <item>
+      <title>Vitest 单元测试：从 0 到工程级覆盖率</title>
+      <link>https://my-blog.example.com/post/27</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/27</guid>
+      <pubDate>Wed, 15 Oct 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>testing</category>
+      <description><![CDATA[Jest 老了，Vitest 跑得快、配置少、原生 ESM。这篇讲怎么从零搭起来一套真能跑的单测体系。]]></description>
+    </item>
+    <item>
+      <title>Uniapp vs Taro：跨端开发框架的真实对比</title>
+      <link>https://my-blog.example.com/post/24</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/24</guid>
+      <pubDate>Wed, 08 Oct 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>mini-program</category>
+      <description><![CDATA[都说自己"一份代码全平台跑"，到底有什么差别？这篇按团队场景给具体选型建议。]]></description>
+    </item>
+    <item>
+      <title>用 Discriminated Union 优雅建模业务状态</title>
+      <link>https://my-blog.example.com/post/16</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/16</guid>
+      <pubDate>Tue, 30 Sep 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>typescript</category>
+      <description><![CDATA[Loading / Success / Error 三态用 union 类型一锅炖，TypeScript 帮你穷举不漏分支。]]></description>
+    </item>
+    <item>
+      <title>AbortController：现代 Web 取消异步任务的标准答案</title>
+      <link>https://my-blog.example.com/post/20</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/20</guid>
+      <pubDate>Fri, 12 Sep 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>javascript</category>
+      <description><![CDATA[网络请求、定时器、事件监听都能用一个 controller 统一取消。这篇讲透使用场景和坑点。]]></description>
+    </item>
+    <item>
+      <title>微信小程序性能优化：包大小、首屏、长列表三板斧</title>
+      <link>https://my-blog.example.com/post/25</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/25</guid>
+      <pubDate>Fri, 05 Sep 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>mini-program</category>
+      <description><![CDATA[包超 2MB 上传不了，首屏 5 秒用户跑光，长列表卡到崩溃—— 这三个高频痛点的实战解法。]]></description>
+    </item>
+    <item>
+      <title>Zustand vs Redux Toolkit：2026 年的 React 状态管理选型</title>
+      <link>https://my-blog.example.com/post/22</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/22</guid>
+      <pubDate>Thu, 28 Aug 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>react</category>
+      <description><![CDATA[新项目用谁、老项目要不要迁、什么时候选 Jotai？这篇按团队规模和场景给具体建议。]]></description>
+    </item>
+    <item>
+      <title>前端 E2E：Playwright vs Cypress 选型与团队实践</title>
+      <link>https://my-blog.example.com/post/28</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/28</guid>
+      <pubDate>Fri, 22 Aug 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>testing</category>
+      <description><![CDATA[Cypress 老牌易用、Playwright 新锐多浏览器。我们团队最终选了 Playwright，理由有三个。]]></description>
+    </item>
+    <item>
+      <title>View Transitions API：让单页应用切换页面有质感</title>
+      <link>https://my-blog.example.com/post/18</link>
+      <guid isPermaLink="true">https://my-blog.example.com/post/18</guid>
+      <pubDate>Fri, 15 Aug 2025 00:00:00 GMT</pubDate>
+      <author>EvenKnow</author>
+      <category>css</category>
+      <description><![CDATA[原生浏览器 API 实现页面切换动效，相比 transition + class 组合，体验直接拉高一档。]]></description>
     </item>
   </channel>
 </rss>

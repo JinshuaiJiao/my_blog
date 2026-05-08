@@ -4,35 +4,35 @@
     "name": "Vue.js",
     "description": "Vue3 组合式 API、Pinia、生态实践与源码剖析",
     "color": "#4FC08D",
-    "postCount": 1
+    "postCount": 3
   },
   {
     "id": "react",
     "name": "React",
     "description": "React 函数式组件、Hooks 与工程化实践",
     "color": "#61DAFB",
-    "postCount": 1
+    "postCount": 3
   },
   {
     "id": "typescript",
     "name": "TypeScript",
     "description": "类型体操、泛型设计与项目落地经验",
     "color": "#3178C6",
-    "postCount": 1
+    "postCount": 3
   },
   {
     "id": "javascript",
     "name": "JavaScript",
     "description": "JavaScript 核心机制与现代特性",
     "color": "#F7DF1E",
-    "postCount": 1
+    "postCount": 3
   },
   {
     "id": "css",
     "name": "CSS",
     "description": "样式方案、Tailwind 实践与可视化交互",
     "color": "#1572B6",
-    "postCount": 1
+    "postCount": 3
   },
   {
     "id": "engineering",
@@ -46,7 +46,7 @@
     "name": "小程序",
     "description": "Taro / Uniapp 跨端开发与多端适配实践",
     "color": "#07C160",
-    "postCount": 0
+    "postCount": 3
   },
   {
     "id": "ai-engineering",
@@ -60,6 +60,6 @@
     "name": "测试工程",
     "description": "MSW + Vitest 接口契约、单元测试与可维护性",
     "color": "#10B981",
-    "postCount": 0
+    "postCount": 3
   }
 ]
