@@ -6,15 +6,15 @@
     <description>专注 Vue3 / React / TypeScript，深度实践 AI Agent + MCP 工作流。</description>
     <language>zh-CN</language>
     <atom:link href="https://my-blog.example.com/rss.xml" rel="self" type="application/rss+xml"/>
-    <lastBuildDate>Fri, 08 May 2026 07:07:41 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 08 May 2026 07:09:40 GMT</lastBuildDate>
     <item>
-      <title>Claude Code 上手指南：从 hooks 到 MCP 的完整工作流</title>
+      <title>Claude Code 入门指南：Skills、Slash Commands 与 MCP 三件套</title>
       <link>https://my-blog.example.com/post/9</link>
       <guid isPermaLink="true">https://my-blog.example.com/post/9</guid>
       <pubDate>Fri, 08 May 2026 00:00:00 GMT</pubDate>
       <author>EvenKnow</author>
       <category>ai-engineering</category>
-      <description><![CDATA[Claude Code 是把 Claude 搬进终端的官方 CLI。本文从安装开始，依次讲 CLAUDE.md、hooks、slash commands 和 MCP，让你建立一套可拦截、可扩展的 AI 开发工作流。]]></description>
+      <description><![CDATA[Claude Code 真正的扩展能力都藏在这三件套里：Skills 让 AI 按需载入指令包，Slash Commands 把多步流程一键化，MCP 把外部系统接进对话。这篇按从易到难讲透三者。]]></description>
     </item>
     <item>
       <title>Claude Code Subagent 实战：把 PR Review 拆成 5 个 Agent 并行跑</title>

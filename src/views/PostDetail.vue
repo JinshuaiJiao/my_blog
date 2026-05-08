@@ -224,8 +224,10 @@ import markdown from 'highlight.js/lib/languages/markdown'
 
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('js', javascript)
+hljs.registerLanguage('jsx', javascript)
 hljs.registerLanguage('typescript', typescript)
 hljs.registerLanguage('ts', typescript)
+hljs.registerLanguage('tsx', typescript)
 hljs.registerLanguage('bash', bash)
 hljs.registerLanguage('shell', bash)
 hljs.registerLanguage('sh', bash)
@@ -251,8 +253,13 @@ const md = new Marked(
   markedHighlight({
     langPrefix: 'hljs language-',
     highlight(code, lang) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-      return hljs.highlight(code, { language }).value
+      if (lang && hljs.getLanguage(lang)) {
+        return hljs.highlight(code, { language: lang }).value
+      }
+      return code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
     },
   })
 )
