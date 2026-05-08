@@ -19,16 +19,22 @@
           关于我
         </router-link>
 
-        <!-- Search -->
-        <div class="relative">
-          <input v-model="searchQuery" @input="handleSearch" type="text" placeholder="搜索文章..."
-            class="w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-          <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <!-- Search Trigger -->
+        <button
+          type="button"
+          @click="searchOpen = true"
+          class="group flex items-center w-64 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-primary-400 dark:hover:border-primary-500 transition-colors"
+          aria-label="打开搜索"
+        >
+          <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-        </div>
+          <span class="flex-1 text-left text-sm text-gray-400 dark:text-gray-500">搜索文章…</span>
+          <kbd class="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded">
+            <span>{{ isMac ? '⌘' : 'Ctrl' }}</span>
+            <span>K</span>
+          </kbd>
+        </button>
 
         <!-- Theme Toggle -->
         <div class="relative">
@@ -94,6 +100,8 @@
       </button>
     </nav>
 
+    <SearchModal v-model:open="searchOpen" />
+
     <!-- Mobile Menu -->
     <div v-if="showMobileMenu"
       class="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
@@ -107,10 +115,16 @@
         <router-link to="/about" class="block nav-link" @click="closeMobileMenu">
           关于我
         </router-link>
-        <div class="pt-2">
-          <input v-model="searchQuery" @input="handleSearch" type="text" placeholder="搜索文章..."
-            class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-        </div>
+        <button
+          type="button"
+          @click="openSearchFromMobile"
+          class="w-full flex items-center px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+        >
+          <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span class="text-sm text-gray-400">搜索文章…</span>
+        </button>
       </div>
     </div>
   </header>
@@ -118,18 +132,21 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useBlogStore } from '../stores/blog'
 import { useThemeStore } from '../stores/theme'
+import SearchModal from './SearchModal.vue'
 
-const router = useRouter()
-const blogStore = useBlogStore()
 const themeStore = useThemeStore()
 
 const showMobileMenu = ref(false)
-const searchQuery = ref('')
+const searchOpen = ref(false)
 const showThemeHint = ref(false)
 const showThemeDot = ref(true)
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+
+const openSearchFromMobile = () => {
+  showMobileMenu.value = false
+  searchOpen.value = true
+}
 
 const THEME_HINT_KEY = 'theme-hint-toggled-v2'
 
@@ -164,13 +181,6 @@ const toggleMobileMenu = () => {
 
 const closeMobileMenu = () => {
   showMobileMenu.value = false
-}
-
-const handleSearch = () => {
-  blogStore.setSearchQuery(searchQuery.value)
-  if (router.currentRoute.value.name !== 'Home') {
-    router.push('/')
-  }
 }
 
 const handleThemeToggle = async () => {
